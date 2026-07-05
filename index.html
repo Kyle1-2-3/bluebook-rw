@@ -6,21 +6,21 @@
 <title>SAT R&W Practice</title>
 <style>
   :root {
-    --blue: #1b5fd9;
+    --blue: #1b1f9e;            /* SAT deep blue for buttons */
     --dark: #1e1e1e;
     --line: #d9d9d9;
-    --bg: #ffffff;
+    --bb-bar: #e9edf9;          /* Bluebook lavender chrome */
+    --bb-navy: #0d1a54;         /* practice-test banner */
+    --bb-btn: #2c3ac9;          /* Next / cross-out blue */
+    --serif: Charter, Georgia, 'Times New Roman', serif;
     --green: #12a150;
     --red: #d64545;
-    --bar: #e7eafb;          /* UWorld lavender bar */
-    --bar-line: #c9cef0;
-    --pill-dark: #1c1c2b;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--dark); background: var(--bg);
+    color: var(--dark); background: #fff;
     display: flex; flex-direction: column; height: 100vh; overflow: hidden;
   }
   .hidden { display: none !important; }
@@ -37,9 +37,9 @@
   .panel .hint { color:#777; font-size:13px; margin:0 0 20px; }
   .field-label { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#555; margin-bottom:10px; }
   .diffs { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px; }
-  .diff { display:flex; align-items:center; gap:10px; border:1.5px solid var(--line); border-radius:10px; padding:12px 16px; cursor:pointer; user-select:none; min-width:150px; transition:border-color .1s, background .1s; }
+  .diff { display:flex; align-items:center; gap:10px; border:1.5px solid var(--line); border-radius:10px; padding:12px 16px; cursor:pointer; user-select:none; min-width:150px; }
   .diff:hover { border-color:#999; }
-  .diff.on { border-color: var(--blue); background:#eef4fd; }
+  .diff.on { border-color: var(--blue); background:#eef0fb; }
   .diff input { display:none; }
   .diff .box { width:20px; height:20px; border:2px solid #aaa; border-radius:5px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff; }
   .diff.on .box { background:var(--blue); border-color:var(--blue); }
@@ -48,6 +48,8 @@
   .bars { display:inline-flex; gap:2px; align-items:flex-end; height:14px; margin-left:2px; }
   .bars i { width:4px; background:#bbb; border-radius:1px; display:block; }
   .diff.on .bars i.f { background: var(--blue); }
+  .namerow { margin-bottom:22px; }
+  .namerow input { border:1.5px solid var(--line); border-radius:8px; padding:9px 12px; font-size:14px; width:240px; }
   .avail { font-size:12.5px; color:#888; margin: -8px 0 20px; }
   .avail b { color:#444; }
   .create-row { display:flex; align-items:center; gap:16px; }
@@ -56,7 +58,7 @@
   .create-note { font-size:12.5px; color:#888; }
   .stats { display:grid; grid-template-columns: repeat(4,1fr); gap:14px; margin-bottom:28px; }
   .stat { border:1px solid var(--line); border-radius:10px; padding:16px; text-align:center; }
-  .stat .n { font-size:24px; font-weight:800; color:var(--dark); }
+  .stat .n { font-size:24px; font-weight:800; }
   .stat .l { font-size:11.5px; color:#888; text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
   .hist-empty { color:#999; font-style:italic; padding:10px 0; }
   .hrow { display:grid; grid-template-columns: 1fr auto auto auto auto; gap:14px; align-items:center; border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:10px; cursor:pointer; }
@@ -68,87 +70,82 @@
   .hrow .htime { font-size:12.5px; color:#777; }
   .hrow .del { border:none; background:none; color:#bbb; font-size:16px; cursor:pointer; }
   .hrow .del:hover { color: var(--red); }
-
   .loading { position:fixed; inset:0; background:rgba(255,255,255,.94); z-index:50; display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px; }
   .loading.on { display:flex; }
   .spinner { width:44px; height:44px; border:4px solid #e0e0e0; border-top-color:var(--blue); border-radius:50%; animation:spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading .msg { font-size:15px; color:#444; }
   .loading .bar { width:280px; height:6px; background:#eee; border-radius:3px; overflow:hidden; }
   .loading .bar i { display:block; height:100%; background:var(--blue); width:0; transition:width .2s; }
 
-  /* ============ TEST (UWorld tutored look) ============ */
-  #test { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  /* ============ TEST (Bluebook) ============ */
+  #test { flex:1; display:flex; flex-direction:column; overflow:hidden; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
 
-  header.uw {
-    display:flex; align-items:center; padding:8px 22px;
-    background:var(--bar); border-bottom:1px solid var(--bar-line); flex:0 0 auto; gap:6px;
-  }
-  .hdr-left { display:flex; align-items:center; gap:26px; }
-  .mode-label { font-size:14px; line-height:1.2; }
-  .mode-label b { font-weight:700; }
-  .mode-label .dir { color:#333; font-size:13px; cursor:pointer; }
-  .toolbtn { display:flex; flex-direction:column; align-items:center; gap:1px; font-size:11px; color:#2b2b3a; cursor:pointer; background:none; border:none; position:relative; }
-  .toolbtn .ic { font-size:19px; line-height:1; }
-  .toolbtn .badge { position:absolute; top:-3px; right:2px; background:#555; color:#fff; font-size:8px; border-radius:8px; padding:0 3px; }
-  .hdr-center { flex:1; display:flex; flex-direction:column; align-items:center; }
-  .hdr-center .clock { font-size:22px; font-weight:700; letter-spacing:.5px; }
-  .hdr-center .hidebtn { font-size:11px; border:1px solid #8b90b5; background:transparent; border-radius:12px; padding:1px 14px; cursor:pointer; margin-top:1px; }
-  .hdr-right { display:flex; align-items:center; gap:22px; }
+  header.bb { background:var(--bb-bar); display:grid; grid-template-columns:1fr auto 1fr; align-items:start; padding:14px 34px 16px; }
+  header.bb .sec-title { font-size:18px; font-weight:700; color:#0e0e0e; white-space:nowrap; }
+  header.bb .directions { font-size:15px; color:#111; margin-top:8px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
+  header.bb .directions svg { width:11px; height:11px; }
+  .h-tool svg { width:22px; height:20px; }
+  .h-center { text-align:center; padding-top:2px; }
+  .h-center .clock { font-size:27px; font-weight:600; color:#111; letter-spacing:.5px; line-height:1.05; }
+  .h-center .hidebtn { margin-top:4px; font-size:14px; border:1.5px solid #333; border-radius:16px; padding:2px 18px; background:transparent; cursor:pointer; }
+  .h-right { display:flex; justify-content:flex-end; align-items:flex-start; gap:34px; padding-top:2px; }
+  .h-tool { display:flex; flex-direction:column; align-items:center; font-size:14px; color:#111; cursor:pointer; gap:5px; background:none; border:none; }
+  .h-tool .ic { font-size:19px; line-height:1; }
 
-  .uw-main { flex:1 1 auto; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; }
-  .pane { overflow-y:auto; padding:28px 42px; }
-  .left { border-right:1px solid var(--line); }
-  .stimulus { font-size:16.5px; line-height:1.65; }
-  .stimulus table { border-collapse:collapse; margin:12px 0; }
-  .stimulus td, .stimulus th { border:1px solid #555; padding:6px 12px; }
+  .practice-banner { background:var(--bb-navy); color:#fff; text-align:center; font-size:14px; font-weight:700; letter-spacing:1.2px; padding:10px; border-radius:0 0 14px 14px; }
+
+  .bb-main { flex:1 1 auto; display:grid; grid-template-columns:1fr 1px 1fr; overflow:hidden; }
+  .pane { overflow-y:auto; }
+  .left { padding:30px 60px 30px 46px; }
+  .divider { position:relative; background:#bdbdbd; }
+  .divider .handle { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:15px; height:34px; background:#2f2f2f; border-radius:4px; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:-1px; }
+  .right { padding:26px 46px; }
+  .passage { font-family:var(--serif); font-size:19px; line-height:1.5; color:#1a1a1a; }
   .no-stim { color:#999; font-style:italic; }
+  .passage table { border-collapse:collapse; margin:12px 0; }
+  .passage td, .passage th { border:1px solid #555; padding:6px 12px; }
 
-  .qhead { display:flex; align-items:center; gap:12px; border-bottom:1px solid #d7d7d7; padding-bottom:12px; margin-bottom:20px; }
-  .qbadge { background:#111; color:#fff; font-weight:700; font-size:16px; padding:3px 12px; border-radius:6px; }
-  .mark { display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px; user-select:none; color:#222; }
-  .mark .bm { font-size:16px; color:#555; }
-  .mark.on .bm { color:var(--blue); }
-  .strike-toggle { margin-left:auto; border:1px solid #b7b7b7; border-radius:6px; width:34px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; font-size:15px; }
-  .strike-toggle.on { background:var(--dark); color:#fff; border-color:var(--dark); }
+  .qhead { display:flex; align-items:center; margin-bottom:22px; }
+  .qbadge { background:#1a1a1a; color:#fff; font-weight:700; font-size:17px; padding:4px 13px; border-radius:3px; }
+  .mark { display:flex; align-items:center; gap:8px; font-family:var(--serif); font-size:17px; cursor:pointer; margin-left:14px; white-space:nowrap; }
+  .mark.on .bm { stroke:var(--bb-btn); fill:var(--bb-btn); }
+  .dash { flex:1; border-top:1.5px dashed #6f6f6f; margin:0 16px; }
+  .abc { background:var(--bb-btn); color:#fff; border:none; border-radius:7px; padding:7px 10px; font-size:13px; font-weight:700; cursor:pointer; text-decoration:line-through; letter-spacing:.5px; }
+  .abc.off { background:#fff; color:#333; border:1.5px solid #9a9a9a; }
 
-  .stem { font-size:16px; line-height:1.55; margin-bottom:22px; }
-  .options { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:13px; }
-  .opt { display:flex; align-items:center; gap:16px; border:1px solid #cfd3e0; border-radius:11px; padding:15px 18px; cursor:pointer; position:relative; font-size:15px; line-height:1.5; background:#fff; }
-  .opt:hover { border-color:#8a90a5; }
-  .opt .circle { flex:0 0 auto; width:34px; height:34px; border:1.5px solid #7a7f8c; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; }
-  .opt.selected { border-color:var(--blue); box-shadow:0 0 0 1px var(--blue) inset; }
-  .opt.selected .circle { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .stem { font-family:var(--serif); font-size:19px; line-height:1.5; margin-bottom:24px; color:#1a1a1a; }
+
+  .options { display:flex; flex-direction:column; gap:15px; }
+  .opt-row { display:flex; align-items:center; gap:16px; }
+  .opt { flex:1; display:flex; align-items:center; gap:18px; border:1.5px solid #8b8e99; border-radius:10px; padding:14px 20px; cursor:pointer; background:#fff; font-family:var(--serif); font-size:18px; position:relative; min-height:54px; }
+  .opt:hover { border-color:#5a5d68; }
+  .opt .circle { flex:0 0 auto; width:33px; height:33px; border:1.5px solid #3a3a3a; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; }
   .opt .content { flex:1; } .opt .content p { margin:0; }
-  .opt .strike-btn { display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:12px; border:1px solid #999; border-radius:12px; background:#fff; padding:1px 8px; cursor:pointer; }
-  body.crossmode .opt:not(.locked) .strike-btn { display:block; }
-  .opt.struck .content, .opt.struck .circle { text-decoration:line-through; color:#aaa; }
-  .opt.locked { cursor:default; }
-  .opt.correct { border-color:var(--green); box-shadow:0 0 0 1px var(--green) inset; }
+  .opt.selected { border-color:var(--bb-btn); border-width:2px; }
+  .opt.selected .circle { background:var(--bb-btn); color:#fff; border-color:var(--bb-btn); }
+  .opt.struck .circle, .opt.struck .content { text-decoration:line-through; color:#9a9a9a; }
+  .opt.struck { border-color:#c7c7c7; }
+  .opt.struck::after { content:''; position:absolute; left:14px; right:14px; top:50%; border-top:1.5px solid #2b2b2b; }
+  /* review coloring */
+  .opt.correct { border-color:var(--green); border-width:2px; }
   .opt.correct .circle { background:var(--green); color:#fff; border-color:var(--green); }
-  .opt.wrong { border-color:var(--red); box-shadow:0 0 0 1px var(--red) inset; }
+  .opt.wrong { border-color:var(--red); border-width:2px; }
   .opt.wrong .circle { background:var(--red); color:#fff; border-color:var(--red); }
 
-  .result-strip { display:flex; align-items:center; gap:46px; border-left:5px solid var(--green); background:#fff; box-shadow:0 0 0 1px #ececec; border-radius:2px; padding:16px 22px; margin-top:24px; }
-  .result-strip.wrong { border-left-color:var(--red); }
-  .result-strip .verdict { color:var(--green); font-weight:700; font-size:17px; }
-  .result-strip.wrong .verdict { color:var(--red); }
-  .result-strip .metric { display:flex; align-items:center; gap:9px; }
-  .result-strip .metric .mi { font-size:18px; opacity:.7; }
-  .result-strip .metric b { font-size:15px; } .result-strip .metric small { display:block; color:#888; font-size:11px; }
+  .xout { flex:0 0 auto; width:34px; text-align:center; cursor:pointer; user-select:none; }
+  .xout .xc { display:inline-flex; width:25px; height:25px; border:1.4px solid #555; border-radius:50%; align-items:center; justify-content:center; font-size:13px; color:#333; text-decoration:line-through; font-family:var(--serif); }
+  .xout.is-undo { width:auto; font-size:15px; color:#111; font-family:-apple-system,sans-serif; }
+  .opt-row.hide-x .xout { visibility:hidden; }
 
-  .rationale { margin-top:22px; padding:18px 20px; border-left:4px solid var(--blue); background:#f4f8fe; font-size:14px; line-height:1.6; border-radius:0 6px 6px 0; }
-  .rationale h4 { margin:0 0 8px; }
-
-  footer.uw { flex:0 0 auto; display:flex; align-items:center; padding:12px 22px; background:var(--bar); border-top:1px solid var(--bar-line); }
-  .foot-left { display:flex; gap:12px; flex:1; }
-  .foot-right { display:flex; gap:12px; flex:1; justify-content:flex-end; }
-  .pill { border:none; border-radius:22px; padding:11px 30px; font-size:15px; font-weight:600; cursor:pointer; }
-  .pill.blue { background:var(--blue); color:#fff; }
+  footer.bb { background:var(--bb-bar); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:15px 34px; }
+  .who { font-size:19px; font-weight:700; color:#111; }
+  .navbtn-center { justify-self:center; background:#1a1a1a; color:#fff; border:none; border-radius:22px; padding:12px 26px; font-size:15px; font-weight:600; cursor:pointer; }
+  .foot-right { justify-self:end; display:flex; gap:14px; }
+  .pill { border:none; border-radius:24px; padding:13px 42px; font-size:17px; font-weight:700; cursor:pointer; }
+  .pill.blue { background:var(--bb-btn); color:#fff; }
   .pill.blue:disabled { opacity:.4; cursor:not-allowed; }
-  .navbtn-center { background:var(--pill-dark); color:#fff; border:none; border-radius:22px; padding:11px 26px; font-size:14px; cursor:pointer; }
 
-  .nav-pop { position:fixed; bottom:66px; left:50%; transform:translateX(-50%); width:470px; max-width:92vw; background:#fff; border:1px solid #bbb; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.25); padding:16px; display:none; z-index:20; }
+  .nav-pop { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); width:470px; max-width:92vw; background:#fff; border:1px solid #bbb; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.25); padding:16px; display:none; z-index:20; }
   .nav-pop.open { display:block; }
   .nav-pop h3 { margin:0 0 4px; text-align:center; font-size:15px; }
   .legend { display:flex; gap:18px; justify-content:center; font-size:12px; color:#555; margin-bottom:12px; }
@@ -156,7 +153,7 @@
   .swatch { width:14px; height:14px; border-radius:3px; display:inline-block; }
   .grid { display:grid; grid-template-columns:repeat(9,1fr); gap:8px; }
   .cell { aspect-ratio:1; border:1px solid #999; border-radius:4px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; position:relative; }
-  .cell.answered { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .cell.answered { background:var(--bb-btn); color:#fff; border-color:var(--bb-btn); }
   .cell.correct { background:var(--green); color:#fff; border-color:var(--green); }
   .cell.wrong { background:var(--red); color:#fff; border-color:var(--red); }
   .cell.current { outline:2px solid var(--dark); outline-offset:1px; font-weight:700; }
@@ -178,13 +175,12 @@
 <div id="home">
   <div class="home-wrap">
     <div class="brand">SAT <span>R&amp;W</span> Practice</div>
-    <p class="sub">Official College Board question bank · UWorld-style tutored practice · answers check instantly with the official explanation</p>
-
+    <p class="sub">Official College Board question bank · Bluebook-style practice · your progress stays on this device</p>
     <div class="stats" id="stats"></div>
-
     <div class="panel">
       <h2>Create Practice Session</h2>
       <p class="hint">Pick the difficulty levels to include. You'll get 27 questions in real SAT Reading &amp; Writing order. Questions you've already seen are excluded automatically.</p>
+      <div class="namerow"><div class="field-label">Your name (shown during the test)</div><input id="nameInput" placeholder="Student" maxlength="40"></div>
       <div class="field-label">Include questions from difficulty</div>
       <div class="diffs" id="diffs">
         <label class="diff on" data-diff="E"><input type="checkbox" checked><span class="box">✓</span><span class="txt"><b>Easy</b><small>Score band 1–3</small></span><span class="bars"><i class="f" style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i></span></label>
@@ -192,12 +188,8 @@
         <label class="diff on" data-diff="H"><input type="checkbox" checked><span class="box">✓</span><span class="txt"><b>Hard</b><small>Score band 6–7</small></span><span class="bars"><i class="f" style="height:6px"></i><i class="f" style="height:10px"></i><i class="f" style="height:14px"></i></span></label>
       </div>
       <p class="avail" id="avail">Loading question bank…</p>
-      <div class="create-row">
-        <button class="create-btn" id="createBtn" disabled>Create Practice</button>
-        <span class="create-note" id="createNote"></span>
-      </div>
+      <div class="create-row"><button class="create-btn" id="createBtn" disabled>Create Practice</button><span class="create-note" id="createNote"></span></div>
     </div>
-
     <div class="panel">
       <h2>Your Practice History</h2>
       <p class="hint">Click a session to review its questions, answers, and explanations.</p>
@@ -208,46 +200,43 @@
 
 <!-- ============ TEST ============ -->
 <div id="test" class="hidden">
-  <header class="uw">
-    <div class="hdr-left">
-      <div class="mode-label"><b>Tutored, Untimed</b><br><span class="dir">Directions ⌄</span></div>
-      <button class="toolbtn"><span class="ic">⚡</span>Flashcards<span class="badge">0</span></button>
-      <button class="toolbtn"><span class="ic">📖</span>My Notebook</button>
-      <button class="toolbtn"><span class="ic">💬</span>Feedback</button>
+  <header class="bb">
+    <div class="h-left">
+      <div class="sec-title">Section 1, Module 1: Reading and Writing</div>
+      <div class="directions">Directions <svg viewBox="0 0 12 8" fill="none" stroke="#111" stroke-width="1.6"><path d="M1 1.5 6 6.5 11 1.5"/></svg></div>
     </div>
-    <div class="hdr-center">
-      <div class="clock" id="clock">0:00</div>
+    <div class="h-center">
+      <div class="clock" id="clock">31:52</div>
       <button class="hidebtn" id="hideTimer">Hide</button>
     </div>
-    <div class="hdr-right">
-      <button class="toolbtn"><span class="ic">🖊️</span>Highlights &amp; Notes</button>
-      <button class="toolbtn"><span class="ic">⚙️</span>Settings</button>
-      <button class="toolbtn"><span class="ic">⋮</span>More</button>
+    <div class="h-right">
+      <button class="h-tool"><span class="ic"><svg viewBox="0 0 44 22" fill="none" stroke="#111" stroke-width="1.5"><path d="M3 15 12 6l3 3-9 9-4 1z"/><path d="M25 3h13v16H25z"/><path d="M28 8h7M28 12h7"/></svg></span>Highlights &amp; Notes</button>
+      <button class="h-tool"><span class="ic"><svg viewBox="0 0 6 22" fill="#111"><circle cx="3" cy="4" r="1.6"/><circle cx="3" cy="11" r="1.6"/><circle cx="3" cy="18" r="1.6"/></svg></span>More</button>
     </div>
   </header>
+  <div class="practice-banner">THIS IS A PRACTICE TEST</div>
 
-  <div class="uw-main">
-    <div class="pane left"><div id="stimulus" class="stimulus"></div></div>
+  <div class="bb-main">
+    <div class="pane left"><div id="stimulus" class="passage"></div></div>
+    <div class="divider"><div class="handle">◂▸</div></div>
     <div class="pane right">
       <div class="qhead">
         <span class="qbadge" id="qnum">1</span>
-        <span class="mark" id="markBtn"><span class="bm">🔖</span> Mark For Review</span>
-        <button class="strike-toggle" id="strikeToggle" title="Cross out answers">S̶</button>
+        <span class="mark" id="markBtn"><svg class="bm" viewBox="0 0 14 18" fill="none" stroke="#333" stroke-width="1.5" style="width:14px;height:18px"><path d="M2 1.6h10v15l-5-3.6-5 3.6z"/></svg> Mark for Review</span>
+        <span class="dash"></span>
+        <button class="abc" id="abcBtn">ABC</button>
       </div>
       <div class="stem" id="stem"></div>
-      <ul class="options" id="options"></ul>
+      <ul class="options" id="options" style="list-style:none;margin:0;padding:0"></ul>
       <div id="resultArea"></div>
     </div>
   </div>
 
-  <footer class="uw">
-    <div class="foot-left">
-      <button class="pill blue" id="endBtn">End</button>
-      <button class="pill blue" id="suspendBtn">Suspend</button>
-    </div>
+  <footer class="bb">
+    <div class="who" id="who">Student</div>
     <button class="navbtn-center" id="navToggle">Question <span id="footNum">1</span> of <span id="footTot">27</span> ⌃</button>
     <div class="foot-right">
-      <button class="pill blue" id="backBtn">Back</button>
+      <button class="pill blue hidden" id="backBtn">Back</button>
       <button class="pill blue" id="nextBtn">Next</button>
     </div>
   </footer>
@@ -255,7 +244,7 @@
 
 <div class="backdrop" id="backdrop"></div>
 <div class="nav-pop" id="navPop">
-  <h3>Section 1: Reading and Writing Questions</h3>
+  <h3>Section 1, Module 1: Reading and Writing</h3>
   <div class="legend" id="legend"></div>
   <div class="grid" id="navGrid"></div>
 </div>
@@ -266,8 +255,8 @@
     <p id="finalText"></p>
     <p style="font-size:13px;color:#777">Review each question to see the correct answer and official explanation.</p>
     <div class="row2">
-      <button class="pill blue" id="homeFromResult" style="background:#e3e3e3;color:#333">Home</button>
-      <button class="pill blue" id="reviewBtn">Review Answers</button>
+      <button class="pill blue" id="homeFromResult" style="background:#e3e3e3;color:#333;padding:11px 26px;font-size:15px">Home</button>
+      <button class="pill blue" id="reviewBtn" style="padding:11px 26px;font-size:15px">Review Answers</button>
     </div>
   </div>
 </div>
@@ -289,246 +278,167 @@ const DOMAINS = [
   { code:'EOI', name:'Expression of Ideas', count:6 },
 ];
 const DIFF_NAME = { E:'Easy', M:'Medium', H:'Hard' };
-const LS_SESSIONS = 'bbrw_v1_sessions';
-const LS_SEEN = 'bbrw_v1_seen';
+const LS_SESSIONS='bbrw_v1_sessions', LS_SEEN='bbrw_v1_seen', LS_NAME='bbrw_v1_name';
 
-const loadSessions = () => JSON.parse(localStorage.getItem(LS_SESSIONS) || '[]');
-const saveSessions = (s) => localStorage.setItem(LS_SESSIONS, JSON.stringify(s));
-const loadSeen = () => new Set(JSON.parse(localStorage.getItem(LS_SEEN) || '[]'));
-const saveSeen = (set) => localStorage.setItem(LS_SEEN, JSON.stringify([...set]));
+const loadSessions=()=>JSON.parse(localStorage.getItem(LS_SESSIONS)||'[]');
+const saveSessions=(s)=>localStorage.setItem(LS_SESSIONS,JSON.stringify(s));
+const loadSeen=()=>new Set(JSON.parse(localStorage.getItem(LS_SEEN)||'[]'));
+const saveSeen=(set)=>localStorage.setItem(LS_SEEN,JSON.stringify([...set]));
 
-async function post(url, body) {
-  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
-const apiList = (domain) => post(LIST_URL, { asmtEventId:99, test:1, domain });
-const apiItem = (external_id) => post(ITEM_URL, { external_id });
+async function post(url, body){ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+const apiList=(domain)=>post(LIST_URL,{asmtEventId:99,test:1,domain});
+const apiItem=(external_id)=>post(ITEM_URL,{external_id});
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /* ---------- HOME ---------- */
-let listCache = {};
-let selectedDiffs = new Set(['E','M','H']);
-
-async function initHome() {
+let listCache={}, selectedDiffs=new Set(['E','M','H']);
+async function initHome(){
+  const nm=document.getElementById('nameInput'); nm.value=localStorage.getItem(LS_NAME)||'';
+  nm.addEventListener('input',()=>localStorage.setItem(LS_NAME,nm.value.trim()));
   renderStats(); renderHistory(); wireDiffs();
   try {
-    const results = await Promise.all(DOMAINS.map(d => apiList(d.code)));
-    DOMAINS.forEach((d,i) => listCache[d.code] = results[i]);
-    updateAvailability();
-    document.getElementById('createBtn').disabled = false;
-  } catch (e) {
-    document.getElementById('avail').textContent = 'Could not reach the College Board question bank. Check your internet connection and reload.';
-  }
+    const results=await Promise.all(DOMAINS.map(d=>apiList(d.code)));
+    DOMAINS.forEach((d,i)=>listCache[d.code]=results[i]);
+    updateAvailability(); document.getElementById('createBtn').disabled=false;
+  } catch(e){ document.getElementById('avail').textContent='Could not reach the College Board question bank. Check your internet connection and reload.'; }
 }
-function wireDiffs() {
-  document.querySelectorAll('#diffs .diff').forEach(el => el.addEventListener('click', (e) => {
-    e.preventDefault();
-    const d = el.dataset.diff;
-    if (selectedDiffs.has(d)) selectedDiffs.delete(d); else selectedDiffs.add(d);
-    el.classList.toggle('on', selectedDiffs.has(d));
-    updateAvailability();
-  }));
+function wireDiffs(){ document.querySelectorAll('#diffs .diff').forEach(el=>el.addEventListener('click',(e)=>{ e.preventDefault(); const d=el.dataset.diff; if(selectedDiffs.has(d))selectedDiffs.delete(d); else selectedDiffs.add(d); el.classList.toggle('on',selectedDiffs.has(d)); updateAvailability(); })); }
+function freshPool(code){ const seen=loadSeen(); return (listCache[code]||[]).filter(q=>q.external_id&&selectedDiffs.has(q.difficulty)&&!seen.has(q.external_id)); }
+function updateAvailability(){
+  const btn=document.getElementById('createBtn'), note=document.getElementById('createNote');
+  if(selectedDiffs.size===0){ document.getElementById('avail').textContent='Select at least one difficulty.'; btn.disabled=true; note.textContent=''; return; }
+  let total=0; DOMAINS.forEach(d=>total+=freshPool(d.code).length);
+  document.getElementById('avail').innerHTML=`<b>${total}</b> unseen questions available in the selected difficulties.`;
+  const enough=DOMAINS.every(d=>freshPool(d.code).length>=d.count);
+  btn.disabled=Object.keys(listCache).length===0;
+  note.textContent=enough?'':(total>0?'Low on unseen questions — the test will be as full as possible.':'No unseen questions left for these difficulties.');
 }
-function freshPool(code) {
-  const seen = loadSeen();
-  return (listCache[code] || []).filter(q => q.external_id && selectedDiffs.has(q.difficulty) && !seen.has(q.external_id));
+function renderStats(){
+  const s=loadSessions(), totalQ=s.reduce((a,x)=>a+x.total,0), totalC=s.reduce((a,x)=>a+x.score,0);
+  const acc=totalQ?Math.round(totalC/totalQ*100):0;
+  const data=[{n:s.length,l:'Sessions'},{n:totalQ,l:'Questions Done'},{n:acc+'%',l:'Accuracy'},{n:loadSeen().size,l:'Unique Seen'}];
+  document.getElementById('stats').innerHTML=data.map(d=>`<div class="stat"><div class="n">${d.n}</div><div class="l">${d.l}</div></div>`).join('');
 }
-function updateAvailability() {
-  const btn = document.getElementById('createBtn'), note = document.getElementById('createNote');
-  if (selectedDiffs.size === 0) { document.getElementById('avail').textContent = 'Select at least one difficulty.'; btn.disabled = true; note.textContent=''; return; }
-  let total = 0; DOMAINS.forEach(d => total += freshPool(d.code).length);
-  document.getElementById('avail').innerHTML = `<b>${total}</b> unseen questions available in the selected difficulties.`;
-  const enough = DOMAINS.every(d => freshPool(d.code).length >= d.count);
-  btn.disabled = Object.keys(listCache).length === 0;
-  note.textContent = enough ? '' : (total > 0 ? 'Low on unseen questions — the test will be as full as possible.' : 'No unseen questions left for these difficulties.');
+function fmtTime(sec){ const m=Math.floor(sec/60),s=sec%60; return `${m}:${String(s).padStart(2,'0')}`; }
+function renderHistory(){
+  const host=document.getElementById('history'), s=loadSessions().slice().reverse();
+  if(!s.length){ host.innerHTML='<div class="hist-empty">No sessions yet. Create your first practice above.</div>'; return; }
+  host.innerHTML=s.map(sess=>{ const pct=Math.round(sess.score/sess.total*100); const diffs=sess.difficulties.map(d=>DIFF_NAME[d]).join(', '); const dt=new Date(sess.date); const datestr=dt.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+dt.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); return `<div class="hrow" data-id="${sess.id}"><div class="hdate"><b>${datestr}</b><small>${sess.total} questions</small></div><span class="tag">${diffs}</span><div><span class="hscore">${sess.score}/${sess.total}</span> <span class="hpct">${pct}%</span></div><span class="htime">⏱ ${fmtTime(sess.elapsed)}</span><button class="del" data-id="${sess.id}">✕</button></div>`; }).join('');
+  host.querySelectorAll('.hrow').forEach(row=>row.addEventListener('click',(e)=>{ if(e.target.classList.contains('del'))return; reviewSession(row.dataset.id); }));
+  host.querySelectorAll('.del').forEach(b=>b.addEventListener('click',(e)=>{ e.stopPropagation(); if(!confirm('Delete this session from your history?'))return; saveSessions(loadSessions().filter(x=>x.id!==b.dataset.id)); renderStats(); renderHistory(); }));
 }
-function renderStats() {
-  const s = loadSessions();
-  const totalQ = s.reduce((a,x)=>a+x.total,0), totalC = s.reduce((a,x)=>a+x.score,0);
-  const acc = totalQ ? Math.round(totalC/totalQ*100) : 0;
-  const data = [ {n:s.length,l:'Sessions'}, {n:totalQ,l:'Questions Done'}, {n:acc+'%',l:'Accuracy'}, {n:loadSeen().size,l:'Unique Seen'} ];
-  document.getElementById('stats').innerHTML = data.map(d=>`<div class="stat"><div class="n">${d.n}</div><div class="l">${d.l}</div></div>`).join('');
-}
-function fmtTime(sec){ const m=Math.floor(sec/60), s=sec%60; return `${m}:${String(s).padStart(2,'0')}`; }
-function renderHistory() {
-  const host = document.getElementById('history');
-  const s = loadSessions().slice().reverse();
-  if (!s.length) { host.innerHTML = '<div class="hist-empty">No sessions yet. Create your first practice above.</div>'; return; }
-  host.innerHTML = s.map(sess => {
-    const pct = Math.round(sess.score/sess.total*100);
-    const diffs = sess.difficulties.map(d=>DIFF_NAME[d]).join(', ');
-    const dt = new Date(sess.date);
-    const datestr = dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}) + ' ' + dt.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
-    return `<div class="hrow" data-id="${sess.id}"><div class="hdate"><b>${datestr}</b><small>${sess.total} questions</small></div><span class="tag">${diffs}</span><div><span class="hscore">${sess.score}/${sess.total}</span> <span class="hpct">${pct}%</span></div><span class="htime">⏱ ${fmtTime(sess.elapsed)}</span><button class="del" data-id="${sess.id}" title="Delete">✕</button></div>`;
-  }).join('');
-  host.querySelectorAll('.hrow').forEach(row => row.addEventListener('click', (e) => { if (e.target.classList.contains('del')) return; reviewSession(row.dataset.id); }));
-  host.querySelectorAll('.del').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); if (!confirm('Delete this session from your history?')) return; saveSessions(loadSessions().filter(x => x.id !== b.dataset.id)); renderStats(); renderHistory(); }));
-}
-
-async function createSession() {
-  const diffs = [...selectedDiffs];
-  document.getElementById('loading').classList.add('on');
-  const bar = document.getElementById('loadBar'); bar.style.width='0%';
+async function createSession(){
+  const diffs=[...selectedDiffs];
+  document.getElementById('loading').classList.add('on'); const bar=document.getElementById('loadBar'); bar.style.width='0%';
   try {
-    const plan = DOMAINS.map(d => { const pool = shuffle(freshPool(d.code)); return { domain:d, metas: pool.slice(0, Math.min(pool.length, d.count+3)) }; });
-    const allMetas = plan.flatMap(p => p.metas.map(m => ({ meta:m, domain:p.domain })));
-    let done = 0;
-    const items = await Promise.all(allMetas.map(async (x) => {
-      let full=null; try { full = await apiItem(x.meta.external_id); } catch(e){}
-      done++; bar.style.width = Math.round(done/allMetas.length*100)+'%';
-      return { x, full };
-    }));
-    const picked = [];
-    for (const p of plan) {
-      let taken = 0;
-      for (const it of items) {
-        if (it.x.domain.code !== p.domain.code) continue;
-        if (taken >= p.domain.count) break;
-        const f = it.full;
-        if (!f || f.type !== 'mcq' || !Array.isArray(f.answerOptions) || f.answerOptions.length < 2) continue;
-        picked.push({ externalid: it.x.meta.external_id, domain: p.domain.name, skill: it.x.meta.skill_desc, difficulty: it.x.meta.difficulty,
-          stimulus: f.stimulus||'', stem: f.stem||'', options: f.answerOptions.map(o=>({id:o.id,content:o.content})),
-          correct: Array.isArray(f.correct_answer)?f.correct_answer[0]:f.correct_answer, rationale: f.rationale||'' });
-        taken++;
-      }
-    }
-    if (!picked.length) { alert('No questions could be loaded for the selected difficulties.'); return; }
-    const seen = loadSeen(); picked.forEach(q => seen.add(q.externalid)); saveSeen(seen);
-    startTest(picked, diffs, null);
-  } catch (e) { alert('Failed to build the test: ' + e.message); }
+    const plan=DOMAINS.map(d=>{ const pool=shuffle(freshPool(d.code)); return {domain:d,metas:pool.slice(0,Math.min(pool.length,d.count+3))}; });
+    const allMetas=plan.flatMap(p=>p.metas.map(m=>({meta:m,domain:p.domain})));
+    let done=0;
+    const items=await Promise.all(allMetas.map(async(x)=>{ let full=null; try{full=await apiItem(x.meta.external_id);}catch(e){} done++; bar.style.width=Math.round(done/allMetas.length*100)+'%'; return {x,full}; }));
+    const picked=[];
+    for(const p of plan){ let taken=0; for(const it of items){ if(it.x.domain.code!==p.domain.code)continue; if(taken>=p.domain.count)break; const f=it.full; if(!f||f.type!=='mcq'||!Array.isArray(f.answerOptions)||f.answerOptions.length<2)continue; picked.push({externalid:it.x.meta.external_id,domain:p.domain.name,skill:it.x.meta.skill_desc,difficulty:it.x.meta.difficulty,stimulus:f.stimulus||'',stem:f.stem||'',options:f.answerOptions.map(o=>({id:o.id,content:o.content})),correct:Array.isArray(f.correct_answer)?f.correct_answer[0]:f.correct_answer,rationale:f.rationale||''}); taken++; } }
+    if(!picked.length){ alert('No questions could be loaded for the selected difficulties.'); return; }
+    const seen=loadSeen(); picked.forEach(q=>seen.add(q.externalid)); saveSeen(seen);
+    startTest(picked,diffs,null);
+  } catch(e){ alert('Failed to build the test: '+e.message); }
   finally { document.getElementById('loading').classList.remove('on'); }
 }
 
-/* ---------- TEST ENGINE (tutored) ---------- */
-let questions=[], answers=[], marked=[], struck=[], revealed=[], idx=0;
-let elapsed=0, timerId=null, sessionDiffs=[], finished=false, reviewingPast=false, savedId=null;
+/* ---------- TEST ENGINE ---------- */
+let questions=[], answers=[], marked=[], struck=[], idx=0;
+let elapsed=0, timerId=null, sessionDiffs=[], submitted=false, reviewingPast=false, crossMode=true;
 
-function showView(v){ document.getElementById('home').classList.toggle('hidden', v!=='home'); document.getElementById('test').classList.toggle('hidden', v!=='test'); }
-function isRevealed(i){ return reviewingPast || finished || revealed[i]; }
+function showView(v){ document.getElementById('home').classList.toggle('hidden',v!=='home'); document.getElementById('test').classList.toggle('hidden',v!=='test'); }
 
-function startTest(qs, diffs, saved) {
+function startTest(qs, diffs, saved){
   questions=qs; sessionDiffs=diffs;
-  answers=qs.map(()=>null); marked=qs.map(()=>false); struck=qs.map(()=>new Set()); revealed=qs.map(()=>false);
+  answers=qs.map(()=>null); marked=qs.map(()=>false); struck=qs.map(()=>new Set());
   idx=0; elapsed=0; document.getElementById('footTot').textContent=qs.length;
-  document.body.classList.remove('crossmode'); document.getElementById('strikeToggle').classList.remove('on');
-  if (saved) {
-    reviewingPast=true; finished=true; savedId=saved.id;
-    answers=saved.answers.slice(); marked=saved.marked?saved.marked.slice():qs.map(()=>false); elapsed=saved.elapsed;
-    document.getElementById('clock').textContent=fmtTime(elapsed);
-  } else {
-    reviewingPast=false; finished=false; savedId=null; startTimer();
-  }
+  document.getElementById('who').textContent=(localStorage.getItem(LS_NAME)||'Student').trim()||'Student';
+  crossMode=true; document.getElementById('abcBtn').classList.remove('off');
+  if(saved){ submitted=true; reviewingPast=true; answers=saved.answers.slice(); marked=saved.marked?saved.marked.slice():qs.map(()=>false); elapsed=saved.elapsed; document.getElementById('clock').textContent=fmtTime(elapsed); }
+  else { submitted=false; reviewingPast=false; startTimer(); }
   showView('test'); render(); buildNav();
 }
-function startTimer(){ document.getElementById('clock').textContent='0:00'; timerId=setInterval(()=>{ elapsed++; document.getElementById('clock').textContent=fmtTime(elapsed); },1000); }
+function startTimer(){ elapsed=32*60; document.getElementById('clock').textContent=fmtTime(elapsed); timerId=setInterval(()=>{ elapsed--; if(elapsed<=0){elapsed=0;clearInterval(timerId);} document.getElementById('clock').textContent=fmtTime(elapsed); },1000); }
 
-function render() {
-  const q = questions[idx];
-  const shown = isRevealed(idx);
-  const correctIdx = LETTERS.indexOf(q.correct);
-  document.getElementById('qnum').textContent = idx+1;
-  document.getElementById('footNum').textContent = idx+1;
-  document.getElementById('stimulus').innerHTML = (q.stimulus && q.stimulus.trim()) ? q.stimulus : '<span class="no-stim">(No passage — the question is self-contained.)</span>';
-  document.getElementById('stem').innerHTML = q.stem;
-  document.getElementById('markBtn').classList.toggle('on', marked[idx]);
+function render(){
+  const q=questions[idx], correctIdx=LETTERS.indexOf(q.correct);
+  document.getElementById('qnum').textContent=idx+1;
+  document.getElementById('footNum').textContent=idx+1;
+  document.getElementById('stimulus').innerHTML=(q.stimulus&&q.stimulus.trim())?q.stimulus:'<span class="no-stim">(No passage — the question is self-contained.)</span>';
+  document.getElementById('stem').innerHTML=q.stem;
+  document.getElementById('markBtn').classList.toggle('on',marked[idx]);
 
-  const ul = document.getElementById('options'); ul.innerHTML='';
-  q.options.forEach((opt,i) => {
-    const li=document.createElement('li'); li.className='opt';
-    if (shown) {
-      li.classList.add('locked');
-      if (i===correctIdx) li.classList.add('correct');
-      else if (answers[idx]===i) li.classList.add('wrong');
-    } else {
-      if (answers[idx]===i) li.classList.add('selected');
+  const ul=document.getElementById('options'); ul.innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const row=document.createElement('li'); row.className='opt-row'+((crossMode||submitted)?'':' hide-x');
+    const li=document.createElement('div'); li.className='opt';
+    if(submitted){ if(i===correctIdx)li.classList.add('correct'); else if(answers[idx]===i)li.classList.add('wrong'); }
+    else if(answers[idx]===i) li.classList.add('selected');
+    if(struck[idx].has(i)) li.classList.add('struck');
+    li.innerHTML=`<span class="circle">${LETTERS[i]}</span><span class="content">${opt.content}</span>`;
+    const x=document.createElement('div');
+    const isStruck=struck[idx].has(i);
+    x.className='xout'+(isStruck?' is-undo':''); x.innerHTML=isStruck?'Undo':`<span class="xc">${LETTERS[i]}</span>`;
+    if(!submitted){
+      li.addEventListener('click',()=>{ if(struck[idx].has(i))return; answers[idx]=i; render(); buildNav(); });
+      x.addEventListener('click',(e)=>{ e.stopPropagation(); if(struck[idx].has(i)){struck[idx].delete(i);} else {struck[idx].add(i); if(answers[idx]===i)answers[idx]=null;} render(); buildNav(); });
     }
-    if (struck[idx].has(i)) li.classList.add('struck');
-    const circle = (shown && i===correctIdx) ? '✓' : LETTERS[i];
-    li.innerHTML = `<span class="circle">${circle}</span><span class="content">${opt.content}</span>` +
-      (shown ? '' : `<button class="strike-btn">${struck[idx].has(i)?'Undo':'strike'}</button>`);
-    if (!shown) {
-      const pick=()=>{ answers[idx]=i; revealed[idx]=true; render(); buildNav(); };
-      li.querySelector('.circle').addEventListener('click', pick);
-      li.querySelector('.content').addEventListener('click', pick);
-      li.querySelector('.strike-btn').addEventListener('click',(e)=>{ e.stopPropagation(); if(struck[idx].has(i))struck[idx].delete(i); else struck[idx].add(i); render(); });
-    }
-    ul.appendChild(li);
+    row.appendChild(li); row.appendChild(x); ul.appendChild(row);
   });
 
-  const area = document.getElementById('resultArea');
-  if (shown) {
-    const answered = answers[idx] !== null;
-    const isCorrect = answers[idx] === correctIdx;
-    const verdict = !answered ? 'Not answered' : (isCorrect ? 'Correct' : 'Incorrect');
-    const scored = isCorrect ? '1 / 1' : '0 / 1';
-    area.innerHTML =
-      `<div class="result-strip ${isCorrect?'':'wrong'}">
-        <div class="verdict">${verdict}</div>
-        <div class="metric"><span class="mi">✎</span><div><b>${scored}</b><small>Scored / Max</small></div></div>
-        <div class="metric"><span class="mi">📊</span><div><b>${DIFF_NAME[q.difficulty]||q.difficulty}</b><small>Difficulty</small></div></div>
-      </div>
-      <div class="rationale"><h4>Correct answer: ${q.correct}</h4>${q.rationale||'(No explanation provided.)'}</div>`;
-  } else { area.innerHTML=''; }
+  const area=document.getElementById('resultArea');
+  area.innerHTML = submitted ? `<div class="rationale" style="margin-top:22px;padding:18px 20px;border-left:4px solid var(--blue);background:#f4f6fe;font-size:14px;line-height:1.6;border-radius:0 6px 6px 0"><h4 style="margin:0 0 8px">Correct answer: ${q.correct}</h4>${q.rationale||'(No explanation provided.)'}</div>` : '';
 
-  document.getElementById('backBtn').disabled = idx===0;
-  document.getElementById('nextBtn').disabled = idx===questions.length-1;
+  const back=document.getElementById('backBtn'); back.classList.toggle('hidden',idx===0);
+  const nb=document.getElementById('nextBtn'); nb.textContent=(!submitted&&idx===questions.length-1)?'Next':'Next';
 }
 
-function buildNav() {
-  const legend=document.getElementById('legend');
-  legend.innerHTML = `<span><span class="swatch" style="background:var(--green)"></span>Correct</span><span><span class="swatch" style="background:var(--red)"></span>Incorrect</span><span><span class="swatch" style="background:#fff;border:1px solid #999"></span>Unanswered</span><span>🔖 Marked</span>`;
+function buildNav(){
+  document.getElementById('legend').innerHTML= submitted
+    ? `<span><span class="swatch" style="background:var(--green)"></span>Correct</span><span><span class="swatch" style="background:var(--red)"></span>Incorrect</span><span>🔖 Marked</span>`
+    : `<span><span class="swatch" style="background:#fff;border:1px solid #999"></span>Unanswered</span><span><span class="swatch" style="background:var(--bb-btn)"></span>Answered</span><span>🔖 Marked</span>`;
   const grid=document.getElementById('navGrid'); grid.innerHTML='';
-  questions.forEach((q,i)=>{
-    const c=document.createElement('div'); c.className='cell';
-    if (isRevealed(i) && answers[i]!==null) { c.classList.add(answers[i]===LETTERS.indexOf(q.correct)?'correct':'wrong'); }
-    else if (answers[i]!==null) c.classList.add('answered');
-    if (i===idx) c.classList.add('current');
-    c.innerHTML=(i+1)+(marked[i]?'<span class="flag">🔖</span>':'');
-    c.addEventListener('click',()=>{ idx=i; closeNav(); render(); buildNav(); });
-    grid.appendChild(c);
-  });
+  questions.forEach((q,i)=>{ const c=document.createElement('div'); c.className='cell'; if(submitted){ if(answers[i]===LETTERS.indexOf(q.correct))c.classList.add('correct'); else c.classList.add('wrong'); } else if(answers[i]!==null)c.classList.add('answered'); if(i===idx)c.classList.add('current'); c.innerHTML=(i+1)+(marked[i]?'<span class="flag">🔖</span>':''); c.addEventListener('click',()=>{ idx=i; closeNav(); render(); buildNav(); }); grid.appendChild(c); });
 }
 
-function next(){ if(idx<questions.length-1){ idx++; render(); buildNav(); } }
+function next(){ if(!submitted&&idx===questions.length-1){ confirmSubmit(); return; } if(idx<questions.length-1){ idx++; render(); buildNav(); } }
 function back(){ if(idx>0){ idx--; render(); buildNav(); } }
-
-function endTest(){
-  if (reviewingPast || finished) { goHome(); return; }
-  const answered = answers.filter(a=>a!==null).length;
-  if (!confirm(`End this practice? You've answered ${answered} of ${questions.length}. Your results will be saved.`)) return;
-  finished = true; clearInterval(timerId);
-  let correct=0; questions.forEach((q,i)=>{ if(answers[i]===LETTERS.indexOf(q.correct)) correct++; });
-  const sess={ id:'s'+Math.max(1,elapsed)+'_'+questions.length+'_'+loadSessions().length, date:new Date().toISOString(),
-    difficulties:sessionDiffs, questions, answers, marked, elapsed, score:correct, total:questions.length };
-  const all=loadSessions(); all.push(sess); saveSessions(all); savedId=sess.id;
+function confirmSubmit(){ const un=answers.filter(a=>a===null).length; const msg=un?`You have ${un} unanswered question(s). Submit anyway?`:'Submit and see your score?'; if(confirm(msg)) submit(); }
+function submit(){
+  submitted=true; clearInterval(timerId);
+  let correct=0; questions.forEach((q,i)=>{ if(answers[i]===LETTERS.indexOf(q.correct))correct++; });
+  const sess={id:'s'+Date.now()+'_'+loadSessions().length,date:new Date().toISOString(),difficulties:sessionDiffs,questions,answers,marked,elapsed:(32*60-elapsed>0?32*60-elapsed:elapsed),score:correct,total:questions.length};
+  const all=loadSessions(); all.push(sess); saveSessions(all);
   document.getElementById('finalScore').textContent=`${correct} / ${questions.length}`;
-  document.getElementById('finalText').textContent=`${Math.round(correct/questions.length*100)}% correct · time ${fmtTime(elapsed)}`;
+  document.getElementById('finalText').textContent=`${Math.round(correct/questions.length*100)}% correct`;
   document.getElementById('overlay').classList.add('open');
 }
-
-function reviewSession(id){ const sess=loadSessions().find(x=>x.id===id); if(!sess) return; startTest(sess.questions, sess.difficulties, sess); }
+function reviewSession(id){ const sess=loadSessions().find(x=>x.id===id); if(!sess)return; startTest(sess.questions,sess.difficulties,sess); }
 function goHome(){ clearInterval(timerId); document.getElementById('overlay').classList.remove('open'); closeNav(); showView('home'); renderStats(); renderHistory(); updateAvailability(); }
-
 function openNav(){ document.getElementById('navPop').classList.add('open'); document.getElementById('backdrop').classList.add('open'); buildNav(); }
 function closeNav(){ document.getElementById('navPop').classList.remove('open'); document.getElementById('backdrop').classList.remove('open'); }
 
-/* ---------- wiring ---------- */
-document.getElementById('createBtn').addEventListener('click', createSession);
-document.getElementById('nextBtn').addEventListener('click', next);
-document.getElementById('backBtn').addEventListener('click', back);
-document.getElementById('markBtn').addEventListener('click', ()=>{ marked[idx]=!marked[idx]; render(); buildNav(); });
-document.getElementById('navToggle').addEventListener('click', ()=>{ document.getElementById('navPop').classList.contains('open')?closeNav():openNav(); });
-document.getElementById('backdrop').addEventListener('click', closeNav);
-document.getElementById('strikeToggle').addEventListener('click', ()=>{ document.body.classList.toggle('crossmode'); document.getElementById('strikeToggle').classList.toggle('on'); });
-document.getElementById('endBtn').addEventListener('click', endTest);
-document.getElementById('suspendBtn').addEventListener('click', ()=>{ if(reviewingPast||finished||confirm('Suspend and return home? This practice will not be saved.')) goHome(); });
+document.getElementById('createBtn').addEventListener('click',createSession);
+document.getElementById('nextBtn').addEventListener('click',next);
+document.getElementById('backBtn').addEventListener('click',back);
+document.getElementById('markBtn').addEventListener('click',()=>{ if(submitted)return; marked[idx]=!marked[idx]; render(); buildNav(); });
+document.getElementById('navToggle').addEventListener('click',()=>{ document.getElementById('navPop').classList.contains('open')?closeNav():openNav(); });
+document.getElementById('backdrop').addEventListener('click',closeNav);
+document.getElementById('abcBtn').addEventListener('click',()=>{ crossMode=!crossMode; document.getElementById('abcBtn').classList.toggle('off',!crossMode); render(); });
 document.getElementById('hideTimer').addEventListener('click',(e)=>{ const c=document.getElementById('clock'); const h=c.style.visibility==='hidden'; c.style.visibility=h?'visible':'hidden'; e.target.textContent=h?'Hide':'Show'; });
-document.getElementById('reviewBtn').addEventListener('click', ()=>{ document.getElementById('overlay').classList.remove('open'); idx=0; render(); buildNav(); });
-document.getElementById('homeFromResult').addEventListener('click', goHome);
+document.getElementById('reviewBtn').addEventListener('click',()=>{ document.getElementById('overlay').classList.remove('open'); idx=0; render(); buildNav(); });
+document.getElementById('homeFromResult').addEventListener('click',goHome);
 document.addEventListener('keydown',(e)=>{ if(document.getElementById('test').classList.contains('hidden'))return; if(document.getElementById('overlay').classList.contains('open'))return; if(e.key==='ArrowRight')next(); if(e.key==='ArrowLeft')back(); });
 
-initHome();
+/* ---------- demo mode for layout preview (no network) ---------- */
+const DEMO_QS=[{externalid:'demo',domain:'Craft and Structure',skill:'Words in Context',difficulty:'E',
+  stimulus:'<p>As the region’s first elected representative from a coastal community, Ada Moreno became one of the most ______ figures in the assembly’s history: over the course of her long tenure (1858–1872), Moreno strengthened the authority of the local council and expanded the rights of fishing families.</p>',
+  stem:'<p>Which choice completes the text with the most logical and precise word or phrase?</p>',
+  options:[{id:'a',content:'<p>unpredictable</p>'},{id:'b',content:'<p>important</p>'},{id:'c',content:'<p>secretive</p>'},{id:'d',content:'<p>ordinary</p>'}],
+  correct:'B', rationale:'(demo)'}];
+if(location.search.includes('demo')){ startTest(DEMO_QS,['E'],null); if(location.search.includes('strike')){ struck[0].add(0); render(); } } else { initHome(); }
 </script>
 </body>
 </html>
