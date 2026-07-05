@@ -92,13 +92,15 @@
   .h-tool { display:flex; flex-direction:column; align-items:center; font-size:14px; color:#111; cursor:pointer; gap:5px; background:none; border:none; }
   .h-tool .ic { font-size:19px; line-height:1; }
 
-  .practice-banner { background:var(--bb-navy); color:#fff; text-align:center; font-size:14px; font-weight:700; letter-spacing:1.2px; padding:10px; border-radius:0 0 14px 14px; }
 
   .bb-main { flex:1 1 auto; display:grid; grid-template-columns:1fr 1px 1fr; overflow:hidden; }
   .pane { overflow-y:auto; }
   .left { padding:30px 60px 30px 46px; }
-  .divider { position:relative; background:#bdbdbd; }
-  .divider .handle { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:15px; height:34px; background:#2f2f2f; border-radius:4px; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:-1px; }
+  .divider { position:relative; background:#bdbdbd; cursor:col-resize; touch-action:none; }
+  .divider::before { content:''; position:absolute; top:0; bottom:0; left:-6px; right:-6px; }
+  .divider .handle { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:15px; height:34px; background:#2f2f2f; border-radius:4px; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:-1px; cursor:col-resize; }
+  body.dragging { cursor:col-resize; user-select:none; }
+  body.dragging .pane { pointer-events:none; }
   .right { padding:26px 46px; }
   .passage { font-family:var(--serif); font-size:19px; line-height:1.5; color:#1a1a1a; }
   .no-stim { color:#999; font-style:italic; }
@@ -145,19 +147,26 @@
   .pill.blue { background:var(--bb-btn); color:#fff; }
   .pill.blue:disabled { opacity:.4; cursor:not-allowed; }
 
-  .nav-pop { position:fixed; bottom:70px; left:50%; transform:translateX(-50%); width:470px; max-width:92vw; background:#fff; border:1px solid #bbb; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.25); padding:16px; display:none; z-index:20; }
+  .nav-pop { position:fixed; bottom:86px; left:50%; transform:translateX(-50%); width:600px; max-width:94vw; background:#fff; border:1px solid #c9c9c9; border-radius:8px; box-shadow:0 10px 34px rgba(0,0,0,.3); padding:22px 26px 24px; display:none; z-index:20; }
   .nav-pop.open { display:block; }
-  .nav-pop h3 { margin:0 0 4px; text-align:center; font-size:15px; }
-  .legend { display:flex; gap:18px; justify-content:center; font-size:12px; color:#555; margin-bottom:12px; }
-  .legend span { display:flex; align-items:center; gap:5px; }
+  .nav-pop::after { content:''; position:absolute; bottom:-9px; left:50%; transform:translateX(-50%) rotate(45deg); width:16px; height:16px; background:#fff; border-right:1px solid #c9c9c9; border-bottom:1px solid #c9c9c9; }
+  .np-head { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #ccc; padding-bottom:14px; margin-bottom:14px; }
+  .np-head h3 { margin:0; font-size:21px; font-weight:800; color:#1a1a1a; }
+  .np-x { border:none; background:none; font-size:20px; line-height:1; color:#333; cursor:pointer; padding:4px; }
+  .legend { display:flex; justify-content:space-between; align-items:center; font-size:15px; color:#1a1a1a; margin-bottom:8px; gap:12px; flex-wrap:wrap; }
+  .legend span { display:flex; align-items:center; gap:7px; }
   .swatch { width:14px; height:14px; border-radius:3px; display:inline-block; }
-  .grid { display:grid; grid-template-columns:repeat(9,1fr); gap:8px; }
-  .cell { aspect-ratio:1; border:1px solid #999; border-radius:4px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; position:relative; }
-  .cell.answered { background:var(--bb-btn); color:#fff; border-color:var(--bb-btn); }
-  .cell.correct { background:var(--green); color:#fff; border-color:var(--green); }
-  .cell.wrong { background:var(--red); color:#fff; border-color:var(--red); }
-  .cell.current { outline:2px solid var(--dark); outline-offset:1px; font-weight:700; }
-  .cell .flag { position:absolute; top:-6px; right:-4px; font-size:11px; }
+  .sw-dash { width:16px; height:16px; border:2px dashed #555; display:inline-block; background:#fff; }
+  .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:16px 20px; padding:26px 4px 8px; max-height:296px; overflow-y:auto; }
+  .cell { height:38px; border:2px dashed #4a4a4a; background:#fff; color:var(--bb-btn); display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:600; cursor:pointer; position:relative; }
+  .cell.answered { background:var(--bb-btn); color:#fff; }
+  .cell.correct { background:var(--green); color:#fff; }
+  .cell.wrong { background:var(--red); color:#fff; }
+  .cell .pin { position:absolute; top:-23px; left:50%; transform:translateX(-50%); line-height:0; }
+  .cell .flag { position:absolute; top:-8px; right:-7px; line-height:0; }
+  .np-foot { text-align:center; margin-top:18px; }
+  .np-review { border:1px solid var(--bb-btn); color:var(--bb-btn); background:#fff; border-radius:22px; padding:9px 26px; font-size:16px; cursor:pointer; }
+  .np-review:hover { background:#f2f4ff; }
 
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:30; }
   .overlay.open { display:flex; }
@@ -167,6 +176,43 @@
   .card .row2 { display:flex; gap:10px; justify-content:center; margin-top:14px; }
   .backdrop { position:fixed; inset:0; display:none; z-index:15; }
   .backdrop.open { display:block; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1150px) {
+    header.bb { padding:12px 20px 14px; }
+    .h-right { gap:20px; }
+    .left { padding:24px 30px 24px 26px; }
+    .right { padding:22px 26px; }
+    .passage, .stem { font-size:17px; }
+    .opt { font-size:16px; padding:12px 16px; gap:14px; min-height:48px; }
+    .opt .circle { width:28px; height:28px; font-size:14px; }
+    footer.bb { padding:12px 20px; }
+    .pill { padding:11px 32px; font-size:15px; }
+  }
+  @media (max-width: 900px) {
+    header.bb { padding:10px 14px 12px; }
+    .sec-title { font-size:14px; white-space:normal; }
+    .directions { font-size:13px; margin-top:5px; }
+    .h-center .clock { font-size:21px; }
+    .h-center .hidebtn { font-size:12px; padding:1px 12px; }
+    .h-right { gap:12px; }
+    .h-tool { font-size:11px; }
+    .who { font-size:15px; }
+    .navbtn-center { padding:9px 18px; font-size:13px; }
+    .pill { padding:9px 22px; font-size:14px; }
+    .stats { grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width: 760px) {
+    .bb-main { display:flex; flex-direction:column; }
+    .pane.left { flex:0 0 auto; max-height:42%; border-bottom:1px solid #bdbdbd; padding:16px 18px; }
+    .bb-main .divider { display:none; }
+    .pane.right { flex:1; padding:16px 18px; }
+    .passage, .stem { font-size:15.5px; }
+    .opt { font-size:14.5px; }
+    .qhead { margin-bottom:14px; }
+    .mark { font-size:14px; }
+    .foot-right { gap:8px; }
+  }
 </style>
 </head>
 <body>
@@ -206,7 +252,7 @@
       <div class="directions">Directions <svg viewBox="0 0 12 8" fill="none" stroke="#111" stroke-width="1.6"><path d="M1 1.5 6 6.5 11 1.5"/></svg></div>
     </div>
     <div class="h-center">
-      <div class="clock" id="clock">31:52</div>
+      <div class="clock" id="clock">0:00</div>
       <button class="hidebtn" id="hideTimer">Hide</button>
     </div>
     <div class="h-right">
@@ -214,7 +260,6 @@
       <button class="h-tool"><span class="ic"><svg viewBox="0 0 6 22" fill="#111"><circle cx="3" cy="4" r="1.6"/><circle cx="3" cy="11" r="1.6"/><circle cx="3" cy="18" r="1.6"/></svg></span>More</button>
     </div>
   </header>
-  <div class="practice-banner">THIS IS A PRACTICE TEST</div>
 
   <div class="bb-main">
     <div class="pane left"><div id="stimulus" class="passage"></div></div>
@@ -244,9 +289,10 @@
 
 <div class="backdrop" id="backdrop"></div>
 <div class="nav-pop" id="navPop">
-  <h3>Section 1, Module 1: Reading and Writing</h3>
+  <div class="np-head"><h3 id="npTitle">Test ID</h3><button class="np-x" id="navClose" aria-label="Close">✕</button></div>
   <div class="legend" id="legend"></div>
   <div class="grid" id="navGrid"></div>
+  <div class="np-foot" id="npFoot"><button class="np-review" id="gotoReview">Go to Review Page</button></div>
 </div>
 
 <div class="overlay" id="overlay">
@@ -354,13 +400,14 @@ function startTest(qs, diffs, saved){
   questions=qs; sessionDiffs=diffs;
   answers=qs.map(()=>null); marked=qs.map(()=>false); struck=qs.map(()=>new Set());
   idx=0; elapsed=0; document.getElementById('footTot').textContent=qs.length;
+  document.getElementById('npTitle').textContent='Test ID #'+(100000000+Math.floor(Math.random()*900000000));
   document.getElementById('who').textContent=(localStorage.getItem(LS_NAME)||'Student').trim()||'Student';
   crossMode=true; document.getElementById('abcBtn').classList.remove('off');
   if(saved){ submitted=true; reviewingPast=true; answers=saved.answers.slice(); marked=saved.marked?saved.marked.slice():qs.map(()=>false); elapsed=saved.elapsed; document.getElementById('clock').textContent=fmtTime(elapsed); }
   else { submitted=false; reviewingPast=false; startTimer(); }
   showView('test'); render(); buildNav();
 }
-function startTimer(){ elapsed=32*60; document.getElementById('clock').textContent=fmtTime(elapsed); timerId=setInterval(()=>{ elapsed--; if(elapsed<=0){elapsed=0;clearInterval(timerId);} document.getElementById('clock').textContent=fmtTime(elapsed); },1000); }
+function startTimer(){ elapsed=0; clearInterval(timerId); document.getElementById('clock').textContent=fmtTime(elapsed); timerId=setInterval(()=>{ elapsed++; document.getElementById('clock').textContent=fmtTime(elapsed); },1000); }
 
 function render(){
   const q=questions[idx], correctIdx=LETTERS.indexOf(q.correct);
@@ -395,12 +442,16 @@ function render(){
   const nb=document.getElementById('nextBtn'); nb.textContent=(!submitted&&idx===questions.length-1)?'Next':'Next';
 }
 
+const PIN_SVG='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#111" stroke-width="2"><path d="M12 21s-6.2-5.4-6.2-10.2a6.2 6.2 0 1 1 12.4 0C18.2 15.6 12 21 12 21z"/><circle cx="12" cy="10.6" r="2.1"/></svg>';
+const BM_SVG='<svg viewBox="0 0 14 18" width="13" height="16" fill="#a3122e"><path d="M1 1h12v16l-6-4.2L1 17z"/></svg>';
+function qidOf(q){ let h=0; const s=String(q.externalid||''); for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return 100000+(h%900000); }
 function buildNav(){
   document.getElementById('legend').innerHTML= submitted
-    ? `<span><span class="swatch" style="background:var(--green)"></span>Correct</span><span><span class="swatch" style="background:var(--red)"></span>Incorrect</span><span>🔖 Marked</span>`
-    : `<span><span class="swatch" style="background:#fff;border:1px solid #999"></span>Unanswered</span><span><span class="swatch" style="background:var(--bb-btn)"></span>Answered</span><span>🔖 Marked</span>`;
+    ? `<span><span class="swatch" style="background:var(--green)"></span>Correct</span><span><span class="swatch" style="background:var(--red)"></span>Incorrect</span><span>${BM_SVG} For Review</span>`
+    : `<span>${PIN_SVG} Current QID #${qidOf(questions[idx])}</span><span><span class="sw-dash"></span> Unanswered</span><span>${BM_SVG} For Review</span>`;
+  document.getElementById('npFoot').classList.toggle('hidden',submitted);
   const grid=document.getElementById('navGrid'); grid.innerHTML='';
-  questions.forEach((q,i)=>{ const c=document.createElement('div'); c.className='cell'; if(submitted){ if(answers[i]===LETTERS.indexOf(q.correct))c.classList.add('correct'); else c.classList.add('wrong'); } else if(answers[i]!==null)c.classList.add('answered'); if(i===idx)c.classList.add('current'); c.innerHTML=(i+1)+(marked[i]?'<span class="flag">🔖</span>':''); c.addEventListener('click',()=>{ idx=i; closeNav(); render(); buildNav(); }); grid.appendChild(c); });
+  questions.forEach((q,i)=>{ const c=document.createElement('div'); c.className='cell'; if(submitted){ if(answers[i]===LETTERS.indexOf(q.correct))c.classList.add('correct'); else c.classList.add('wrong'); } else if(answers[i]!==null)c.classList.add('answered'); c.innerHTML=(i+1)+(marked[i]?`<span class="flag">${BM_SVG}</span>`:'')+(i===idx?`<span class="pin">${PIN_SVG}</span>`:''); c.addEventListener('click',()=>{ idx=i; closeNav(); render(); buildNav(); }); grid.appendChild(c); });
 }
 
 function next(){ if(!submitted&&idx===questions.length-1){ confirmSubmit(); return; } if(idx<questions.length-1){ idx++; render(); buildNav(); } }
@@ -409,7 +460,7 @@ function confirmSubmit(){ const un=answers.filter(a=>a===null).length; const msg
 function submit(){
   submitted=true; clearInterval(timerId);
   let correct=0; questions.forEach((q,i)=>{ if(answers[i]===LETTERS.indexOf(q.correct))correct++; });
-  const sess={id:'s'+Date.now()+'_'+loadSessions().length,date:new Date().toISOString(),difficulties:sessionDiffs,questions,answers,marked,elapsed:(32*60-elapsed>0?32*60-elapsed:elapsed),score:correct,total:questions.length};
+  const sess={id:'s'+Date.now()+'_'+loadSessions().length,date:new Date().toISOString(),difficulties:sessionDiffs,questions,answers,marked,elapsed,score:correct,total:questions.length};
   const all=loadSessions(); all.push(sess); saveSessions(all);
   document.getElementById('finalScore').textContent=`${correct} / ${questions.length}`;
   document.getElementById('finalText').textContent=`${Math.round(correct/questions.length*100)}% correct`;
@@ -420,12 +471,25 @@ function goHome(){ clearInterval(timerId); document.getElementById('overlay').cl
 function openNav(){ document.getElementById('navPop').classList.add('open'); document.getElementById('backdrop').classList.add('open'); buildNav(); }
 function closeNav(){ document.getElementById('navPop').classList.remove('open'); document.getElementById('backdrop').classList.remove('open'); }
 
+/* draggable pane divider */
+(function(){
+  const main=document.querySelector('.bb-main'), div=document.querySelector('.bb-main .divider');
+  let dragging=false;
+  div.addEventListener('pointerdown',(e)=>{ dragging=true; div.setPointerCapture(e.pointerId); document.body.classList.add('dragging'); e.preventDefault(); });
+  div.addEventListener('pointermove',(e)=>{ if(!dragging)return; const r=main.getBoundingClientRect(); let pct=(e.clientX-r.left)/r.width; pct=Math.min(.75,Math.max(.25,pct)); main.style.gridTemplateColumns=`${pct}fr 1px ${1-pct}fr`; });
+  const stop=()=>{ dragging=false; document.body.classList.remove('dragging'); };
+  div.addEventListener('pointerup',stop); div.addEventListener('pointercancel',stop);
+  div.addEventListener('dblclick',()=>{ main.style.gridTemplateColumns=''; });
+})();
+
 document.getElementById('createBtn').addEventListener('click',createSession);
 document.getElementById('nextBtn').addEventListener('click',next);
 document.getElementById('backBtn').addEventListener('click',back);
 document.getElementById('markBtn').addEventListener('click',()=>{ if(submitted)return; marked[idx]=!marked[idx]; render(); buildNav(); });
 document.getElementById('navToggle').addEventListener('click',()=>{ document.getElementById('navPop').classList.contains('open')?closeNav():openNav(); });
 document.getElementById('backdrop').addEventListener('click',closeNav);
+document.getElementById('navClose').addEventListener('click',closeNav);
+document.getElementById('gotoReview').addEventListener('click',()=>{ closeNav(); if(!submitted) confirmSubmit(); });
 document.getElementById('abcBtn').addEventListener('click',()=>{ crossMode=!crossMode; document.getElementById('abcBtn').classList.toggle('off',!crossMode); render(); });
 document.getElementById('hideTimer').addEventListener('click',(e)=>{ const c=document.getElementById('clock'); const h=c.style.visibility==='hidden'; c.style.visibility=h?'visible':'hidden'; e.target.textContent=h?'Hide':'Show'; });
 document.getElementById('reviewBtn').addEventListener('click',()=>{ document.getElementById('overlay').classList.remove('open'); idx=0; render(); buildNav(); });
@@ -438,7 +502,7 @@ const DEMO_QS=[{externalid:'demo',domain:'Craft and Structure',skill:'Words in C
   stem:'<p>Which choice completes the text with the most logical and precise word or phrase?</p>',
   options:[{id:'a',content:'<p>unpredictable</p>'},{id:'b',content:'<p>important</p>'},{id:'c',content:'<p>secretive</p>'},{id:'d',content:'<p>ordinary</p>'}],
   correct:'B', rationale:'(demo)'}];
-if(location.search.includes('demo')){ startTest(DEMO_QS,['E'],null); if(location.search.includes('strike')){ struck[0].add(0); render(); } } else { initHome(); }
+if(location.search.includes('demo')){ const qs=location.search.includes('many')?Array.from({length:27},()=>({...DEMO_QS[0]})):DEMO_QS; startTest(qs,['E'],null); if(location.search.includes('strike')){ struck[0].add(0); render(); } if(location.search.includes('nav')){ for(let i=0;i<18;i++)answers[i]=1; marked[3]=true; idx=18; render(); openNav(); } } else { initHome(); }
 </script>
 </body>
 </html>
