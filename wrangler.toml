@@ -1,0 +1,12 @@
+name = "bluebook-rw"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+account_id = "4c82f6200b6e601f839b3087dfde7d58"
+
+rules = [
+  { type = "Text", globs = ["**/*.html"], fallthrough = true }
+]
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "9bec30e704284a1085022ee07ea4605c"
