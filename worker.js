@@ -14,12 +14,13 @@ export default {
     if (url.pathname === '/api/sync') {
       if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
       if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: CORS });
-      if (url.searchParams.get('key') !== env.SYNC_KEY) return new Response('Unauthorized', { status: 401, headers: CORS });
+      const key = url.searchParams.get('key') || '';
+      if (!/^[\w-]{4,64}$/.test(key)) return new Response('Unauthorized', { status: 401, headers: CORS });
       let client;
       try { client = await req.json(); } catch { return new Response('Bad request', { status: 400, headers: CORS }); }
-      const server = JSON.parse((await env.STATE.get('state')) || 'null');
+      const server = JSON.parse((await env.STATE.get('state:' + key)) || 'null');
       const merged = mergeState(server, client);
-      await env.STATE.put('state', JSON.stringify(merged));
+      await env.STATE.put('state:' + key, JSON.stringify(merged));
       return new Response(JSON.stringify(merged), { headers: { 'content-type': 'application/json', ...CORS } });
     }
 

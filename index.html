@@ -73,6 +73,9 @@
   .avail b { color:var(--apl-ink); font-weight:600; }
   .create-row { display:flex; flex-direction:column; align-items:center; gap:10px; }
   .create-note { font-size:12px; color:var(--apl-muted); min-height:1em; }
+  .instant-opt { display:flex; align-items:flex-start; gap:8px; text-align:left; font-size:14px; line-height:1.45; letter-spacing:-.224px; color:var(--apl-muted); margin:0 0 20px; cursor:pointer; }
+  .instant-opt input { margin-top:3px; accent-color:var(--apl-blue); }
+  .instant-opt b { color:var(--apl-ink); font-weight:600; }
   .hlist { max-width:680px; margin:36px auto 0; text-align:left; }
   .hist-empty { color:var(--apl-muted); font-size:17px; letter-spacing:-.374px; text-align:center; padding:14px 0; }
   .hrow { display:grid; grid-template-columns:1fr auto auto auto auto; gap:16px; align-items:center; background:#fff; border:1px solid var(--apl-hairline); border-radius:18px; padding:16px 20px; margin-bottom:12px; cursor:pointer; transition:transform .12s ease; }
@@ -83,8 +86,15 @@
   .hrow .hscore { font-weight:600; font-size:17px; letter-spacing:-.374px; }
   .hrow .hpct { font-size:12px; color:var(--apl-muted); }
   .hrow .htime { font-size:12px; color:var(--apl-muted); }
-  .hrow .del { border:none; background:none; color:#c7c7cc; font-size:16px; cursor:pointer; padding:4px; }
-  .hrow .del:hover { color:var(--apl-ink); }
+  .hrow .del, .vrow .del { border:none; background:none; color:#c7c7cc; font-size:16px; cursor:pointer; padding:4px; }
+  .hrow .del:hover, .vrow .del:hover { color:var(--apl-ink); }
+  .vrow { background:#fff; border:1px solid var(--apl-hairline); border-radius:18px; padding:14px 20px; margin-bottom:12px; cursor:pointer; }
+  .vrow .vhead { display:flex; align-items:center; gap:12px; }
+  .vrow .vhead b { font-size:17px; font-weight:600; letter-spacing:-.374px; }
+  .vrow .vhead small { color:var(--apl-muted); font-size:12px; flex:1; }
+  .vrow .vdef { margin-top:10px; font-size:14px; line-height:1.5; color:#3a3a3c; border-top:1px solid var(--apl-hairline); padding-top:10px; }
+  .vrow .vdef i { color:var(--apl-muted); margin-right:6px; }
+  .keybtn { border:none; background:none; color:var(--apl-blue); font-size:12px; cursor:pointer; padding:0; font-family:inherit; }
   .apl-footer { background:var(--apl-parchment); color:var(--apl-muted); font-size:12px; line-height:1.6; letter-spacing:-.12px; text-align:center; padding:40px 24px 48px; }
   .loading { position:fixed; inset:0; background:rgba(255,255,255,.88); backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px); z-index:50; display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px; color:var(--apl-ink); }
   .loading.on { display:flex; }
@@ -205,6 +215,19 @@
   .backdrop { position:fixed; inset:0; display:none; z-index:15; }
   .backdrop.open { display:block; }
 
+  /* College Board markup ships screen-reader-only text (e.g. "blank" after ______) */
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+  .qtime { margin-left:12px; font-size:12.5px; color:#555; white-space:nowrap; }
+
+  .pause-ov { position:fixed; inset:0; background:#fff; z-index:40; display:none; align-items:center; justify-content:center; text-align:center; }
+  .pause-ov.open { display:flex; }
+  .pause-ov h2 { font-size:28px; margin:0 0 8px; }
+  .pause-ov p { color:#666; margin:0 0 22px; }
+
+  .toast { position:fixed; bottom:84px; left:50%; transform:translateX(-50%); background:#1d1d1f; color:#fff; font-size:14px; padding:9px 18px; border-radius:9999px; z-index:60; opacity:0; transition:opacity .25s; pointer-events:none; }
+  .toast.show { opacity:1; }
+
   /* ============ RESPONSIVE ============ */
   @media (max-width: 1150px) {
     header.bb { padding:9px 18px 11px; }
@@ -267,6 +290,7 @@
         <label class="diff on" data-diff="H"><input type="checkbox" checked><span class="d-name">Hard</span><span class="d-band">Score band 6–7</span></label>
       </div>
       <p class="avail" id="avail">Loading question bank…</p>
+      <label class="instant-opt"><input type="checkbox" id="instantChk"><span><b>Check answers as you go</b> — see the correct answer and explanation right after you answer each question.</span></label>
       <div class="create-row"><button class="pill pill-primary" id="createBtn" disabled>Create Practice</button><span class="create-note" id="createNote"></span></div>
     </div>
   </section>
@@ -275,7 +299,12 @@
     <p class="t-tagline">Click a session to review answers and explanations — or resume one in progress.</p>
     <div class="hlist" id="history"></div>
   </section>
-  <footer class="apl-footer">Questions from the College Board public Question Bank.<br>Your progress stays on this device.</footer>
+  <section class="tile tile-parchment" id="dict-sec">
+    <h2 class="t-display">Dictionary.</h2>
+    <p class="t-tagline">During practice, select a word and press <b>Ctrl+X</b> (<b>⌘X</b> on Mac) to save it here. Click a word to see its definition.</p>
+    <div class="hlist" id="vocabList"></div>
+  </section>
+  <footer class="apl-footer">Questions from the College Board public Question Bank.<br>Records are saved under your sync key. <button class="keybtn" id="keyBtn">Sync key</button></footer>
 </div>
 
 <!-- ============ TEST ============ -->
@@ -287,7 +316,7 @@
     </div>
     <div class="h-center">
       <div class="clock" id="clock">0:00</div>
-      <button class="hidebtn" id="hideTimer">Hide</button>
+      <div><button class="hidebtn" id="hideTimer">Hide</button> <button class="hidebtn" id="pauseBtn">Pause</button></div>
     </div>
     <div class="h-right">
       <button class="h-tool"><span class="ic"><svg viewBox="0 0 44 22" fill="none" stroke="#111" stroke-width="1.5"><path d="M3 15 12 6l3 3-9 9-4 1z"/><path d="M25 3h13v16H25z"/><path d="M28 8h7M28 12h7"/></svg></span>Highlights &amp; Notes</button>
@@ -301,6 +330,7 @@
     <div class="pane right">
       <div class="qhead">
         <span class="qbadge" id="qnum">1</span>
+        <span class="qtime" id="qtime">0:00</span>
         <span class="mark" id="markBtn"><svg class="bm" viewBox="0 0 14 18" fill="none" stroke="#333" stroke-width="1.5" style="width:12px;height:15px"><path d="M2 1.6h10v15l-5-3.6-5 3.6z"/></svg> Mark for Review</span>
         <span class="dash"></span>
         <button class="abc" id="abcBtn">ABC</button>
@@ -341,6 +371,16 @@
   </div>
 </div>
 
+<div class="pause-ov" id="pauseOv">
+  <div>
+    <h2>Paused</h2>
+    <p>The timer is stopped. The test is hidden while paused.</p>
+    <button class="pill blue" id="resumeBtn" style="padding:10px 30px">Resume</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <div class="loading" id="loading">
   <div class="spinner"></div>
   <div class="msg" id="loadMsg">Building your practice test…</div>
@@ -358,7 +398,14 @@ const DOMAINS = [
   { code:'EOI', name:'Expression of Ideas', count:6 },
 ];
 const DIFF_NAME = { E:'Easy', M:'Medium', H:'Hard' };
+// Real R&W module order: skills within each domain, easy→hard within each skill.
+const SKILL_ORDER=['words in context','text structure and purpose','cross-text connections',
+  'central ideas and details','command of evidence','inferences',
+  'boundaries','form, structure, and sense',
+  'transitions','rhetorical synthesis'];
+const DIFF_RANK={E:0,M:1,H:2};
 const LS_SESSIONS='bbrw_v1_sessions', LS_SEEN='bbrw_v1_seen', LS_KEY='bbrw_v1_key', LS_DELETED='bbrw_v1_deleted';
+const LS_VOCAB='bbrw_v1_vocab', LS_VOCAB_DEL='bbrw_v1_vocab_deleted';
 const SYNC_URL='https://bluebook-rw.bridge11korea.workers.dev/api/sync';
 
 const loadSessions=()=>JSON.parse(localStorage.getItem(LS_SESSIONS)||'[]');
@@ -367,6 +414,10 @@ const loadSeen=()=>new Set(JSON.parse(localStorage.getItem(LS_SEEN)||'[]'));
 const saveSeen=(set)=>localStorage.setItem(LS_SEEN,JSON.stringify([...set]));
 const loadDeleted=()=>JSON.parse(localStorage.getItem(LS_DELETED)||'[]');
 const saveDeleted=(d)=>localStorage.setItem(LS_DELETED,JSON.stringify(d));
+const loadVocab=()=>JSON.parse(localStorage.getItem(LS_VOCAB)||'[]');
+const saveVocab=(v)=>localStorage.setItem(LS_VOCAB,JSON.stringify(v));
+const loadVocabDel=()=>JSON.parse(localStorage.getItem(LS_VOCAB_DEL)||'[]');
+const saveVocabDel=(d)=>localStorage.setItem(LS_VOCAB_DEL,JSON.stringify(d));
 
 /* ---------- CROSS-DEVICE SYNC ---------- */
 let askedKey=false; // prompt at most once per page load
@@ -378,12 +429,12 @@ function getSyncKey(){
 async function syncNow(){
   const key=getSyncKey(); if(!key) return;
   try{
-    const r=await fetch(SYNC_URL+'?key='+encodeURIComponent(key),{method:'POST',body:JSON.stringify({sessions:loadSessions(),deleted:loadDeleted()})});
+    const r=await fetch(SYNC_URL+'?key='+encodeURIComponent(key),{method:'POST',body:JSON.stringify({sessions:loadSessions(),deleted:loadDeleted(),vocab:loadVocab(),vocabDeleted:loadVocabDel()})});
     if(r.status===401){ localStorage.removeItem(LS_KEY); return; }
     if(!r.ok) return;
     const m=await r.json();
-    saveSessions(m.sessions); saveDeleted(m.deleted); syncSeen();
-    if(!document.getElementById('home').classList.contains('hidden')){ renderStats(); renderHistory(); updateAvailability(); }
+    saveSessions(m.sessions); saveDeleted(m.deleted); saveVocab(m.vocab||[]); saveVocabDel(m.vocabDeleted||[]); syncSeen();
+    if(!document.getElementById('home').classList.contains('hidden')){ renderStats(); renderHistory(); renderVocab(); updateAvailability(); }
   }catch(e){}
 }
 
@@ -397,7 +448,7 @@ let listCache={}, selectedDiffs=new Set(['E','M','H']);
 function syncSeen(){ const seen=new Set(loadSessions().flatMap(s=>s.questions.map(q=>q.externalid))); saveSeen(seen); }
 async function initHome(){
   syncSeen();
-  renderStats(); renderHistory(); wireDiffs();
+  renderStats(); renderHistory(); renderVocab(); renderKeyBtn(); wireDiffs();
   syncNow();
   try {
     const results=await Promise.all(DOMAINS.map(d=>apiList(d.code)));
@@ -430,8 +481,66 @@ function renderHistory(){
   host.querySelectorAll('.hrow').forEach(row=>row.addEventListener('click',(e)=>{ if(e.target.classList.contains('del'))return; reviewSession(row.dataset.id); }));
   host.querySelectorAll('.del').forEach(b=>b.addEventListener('click',(e)=>{ e.stopPropagation(); if(!confirm('Delete this session? Its questions will become available again in new practice sets.'))return; saveSessions(loadSessions().filter(x=>x.id!==b.dataset.id)); saveDeleted([...new Set([...loadDeleted(),b.dataset.id])]); syncSeen(); renderStats(); renderHistory(); updateAvailability(); syncNow(); }));
 }
+const skillRank=(s)=>{ const i=SKILL_ORDER.indexOf(String(s||'').toLowerCase()); return i<0?SKILL_ORDER.length:i; };
+const satOrder=(a,b)=>skillRank(a.skill)-skillRank(b.skill)||(DIFF_RANK[a.difficulty]??1)-(DIFF_RANK[b.difficulty]??1);
+/* ---------- DICTIONARY ---------- */
+let toastId=null;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastId); toastId=setTimeout(()=>t.classList.remove('show'),1600); }
+function addWord(raw){
+  const w=raw.trim().replace(/\s+/g,' ').replace(/^[^\w'’-]+|[^\w'’-]+$/g,'');
+  if(!w||w.length>60) return;
+  const vocab=loadVocab();
+  if(vocab.some(v=>v.w.toLowerCase()===w.toLowerCase())){ toast(`“${w}” is already in your dictionary`); return; }
+  vocab.push({w,date:new Date().toISOString()}); saveVocab(vocab);
+  toast(`“${w}” added to dictionary ✓`); syncNow();
+}
+function deleteWord(w){
+  saveVocab(loadVocab().filter(v=>v.w!==w));
+  const k=w.toLowerCase();
+  saveVocabDel([...loadVocabDel().filter(t=>t.w!==k),{w:k,date:new Date().toISOString()}]);
+  renderVocab(); syncNow();
+}
+function renderVocab(){
+  const host=document.getElementById('vocabList'), vocab=loadVocab().slice().reverse();
+  if(!vocab.length){ host.innerHTML='<div class="hist-empty">No words yet. Select a word during practice and press Ctrl+X.</div>'; return; }
+  host.innerHTML=vocab.map(v=>{ const dt=new Date(v.date); const datestr=dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}); return `<div class="vrow" data-w="${v.w.replace(/"/g,'&quot;')}"><div class="vhead"><b>${v.w}</b><small>${datestr}</small><button class="del">✕</button></div><div class="vdef hidden"></div></div>`; }).join('');
+  host.querySelectorAll('.vrow').forEach(row=>row.addEventListener('click',(e)=>{ if(e.target.classList.contains('del')){ e.stopPropagation(); deleteWord(row.dataset.w); return; } toggleDef(row); }));
+}
+async function toggleDef(row){
+  const d=row.querySelector('.vdef');
+  if(!d.classList.contains('hidden')){ d.classList.add('hidden'); return; }
+  d.classList.remove('hidden');
+  if(d.dataset.loaded) return;
+  d.textContent='Looking up…';
+  try{
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(row.dataset.w));
+    if(!r.ok) throw new Error();
+    const j=await r.json();
+    const meanings=(j[0]&&j[0].meanings)||[];
+    d.innerHTML=meanings.slice(0,3).map(m=>`<div><i>${m.partOfSpeech}</i>${m.definitions.slice(0,2).map(x=>x.definition).join(' · ')}</div>`).join('')||'No definition found.';
+    d.dataset.loaded='1';
+  }catch(e){ d.textContent='No definition found.'; }
+}
+
+/* ---------- SYNC KEY (per-key accounts) ---------- */
+function renderKeyBtn(){ const k=localStorage.getItem(LS_KEY); document.getElementById('keyBtn').textContent=k?`Sync key: ${k} · Change`:'Set a sync key'; }
+async function changeKey(){
+  const cur=localStorage.getItem(LS_KEY)||'';
+  const nk=(prompt('Enter a sync key (4–64 letters, numbers, - or _).\nEach key keeps its own history — a friend can use their own key to get separate records.',cur)||'').trim();
+  if(!nk||nk===cur) return;
+  if(!/^[\w-]{4,64}$/.test(nk)){ alert('The key must be 4–64 characters: letters, numbers, - or _.'); return; }
+  if(cur){
+    if(!confirm('Switch sync key? History and dictionary on this device will be replaced by the records saved under the new key.')) return;
+    localStorage.removeItem(LS_SESSIONS); localStorage.removeItem(LS_DELETED); localStorage.removeItem(LS_VOCAB); localStorage.removeItem(LS_VOCAB_DEL);
+  }
+  localStorage.setItem(LS_KEY,nk);
+  syncSeen(); renderStats(); renderHistory(); renderVocab(); updateAvailability(); renderKeyBtn();
+  await syncNow();
+}
+
 async function createSession(){
   const diffs=[...selectedDiffs];
+  const instant=document.getElementById('instantChk').checked;
   document.getElementById('loading').classList.add('on'); const bar=document.getElementById('loadBar'); bar.style.width='0%';
   try {
     const plan=DOMAINS.map(d=>{ const pool=shuffle(freshPool(d.code)); return {domain:d,metas:pool.slice(0,Math.min(pool.length,d.count+3))}; });
@@ -439,23 +548,27 @@ async function createSession(){
     let done=0;
     const items=await Promise.all(allMetas.map(async(x)=>{ let full=null; try{full=await apiItem(x.meta.external_id);}catch(e){} done++; bar.style.width=Math.round(done/allMetas.length*100)+'%'; return {x,full}; }));
     const picked=[];
-    for(const p of plan){ let taken=0; for(const it of items){ if(it.x.domain.code!==p.domain.code)continue; if(taken>=p.domain.count)break; const f=it.full; if(!f||f.type!=='mcq'||!Array.isArray(f.answerOptions)||f.answerOptions.length<2)continue; picked.push({externalid:it.x.meta.external_id,domain:p.domain.name,skill:it.x.meta.skill_desc,difficulty:it.x.meta.difficulty,stimulus:f.stimulus||'',stem:f.stem||'',options:f.answerOptions.map(o=>({id:o.id,content:o.content})),correct:Array.isArray(f.correct_answer)?f.correct_answer[0]:f.correct_answer,rationale:f.rationale||''}); taken++; } }
+    for(const p of plan){ let taken=0; const chosen=[]; for(const it of items){ if(it.x.domain.code!==p.domain.code)continue; if(taken>=p.domain.count)break; const f=it.full; if(!f||f.type!=='mcq'||!Array.isArray(f.answerOptions)||f.answerOptions.length<2)continue; chosen.push({externalid:it.x.meta.external_id,domain:p.domain.name,skill:it.x.meta.skill_desc,difficulty:it.x.meta.difficulty,stimulus:f.stimulus||'',stem:f.stem||'',options:f.answerOptions.map(o=>({id:o.id,content:o.content})),correct:Array.isArray(f.correct_answer)?f.correct_answer[0]:f.correct_answer,rationale:f.rationale||''}); taken++; } chosen.sort(satOrder); picked.push(...chosen); }
     if(!picked.length){ alert('No questions could be loaded for the selected difficulties.'); return; }
     const seen=loadSeen(); picked.forEach(q=>seen.add(q.externalid)); saveSeen(seen);
-    startTest(picked,diffs,null);
+    startTest(picked,diffs,null,instant);
   } catch(e){ alert('Failed to build the test: '+e.message); }
   finally { document.getElementById('loading').classList.remove('on'); }
 }
 
 /* ---------- TEST ENGINE ---------- */
-let questions=[], answers=[], marked=[], struck=[], idx=0;
+let questions=[], answers=[], marked=[], struck=[], qTimes=[], idx=0;
 let elapsed=0, timerId=null, sessionDiffs=[], submitted=false, reviewingPast=false, crossMode=true, sessionId=null;
+let instantMode=false, paused=false;
 
 function showView(v){ document.getElementById('home').classList.toggle('hidden',v!=='home'); document.getElementById('test').classList.toggle('hidden',v!=='test'); }
 
-function startTest(qs, diffs, saved){
+function startTest(qs, diffs, saved, instant){
   questions=qs; sessionDiffs=diffs;
   answers=qs.map(()=>null); marked=qs.map(()=>false); struck=qs.map(()=>new Set());
+  qTimes=(saved&&saved.qTimes&&saved.qTimes.length===qs.length)?saved.qTimes.slice():qs.map(()=>0);
+  instantMode=saved?!!saved.instant:!!instant;
+  paused=false; document.getElementById('pauseOv').classList.remove('open'); document.getElementById('pauseBtn').textContent='Pause';
   idx=0; elapsed=0; document.getElementById('footTot').textContent=qs.length;
   document.getElementById('npTitle').textContent='Test ID #'+(100000000+Math.floor(Math.random()*900000000));
   crossMode=true; document.getElementById('abcBtn').classList.remove('off');
@@ -465,28 +578,37 @@ function startTest(qs, diffs, saved){
   else { submitted=false; reviewingPast=false; startTimer(0); }
   showView('test'); render(); buildNav();
 }
-function startTimer(from){ elapsed=from||0; clearInterval(timerId); document.getElementById('clock').textContent=fmtTime(elapsed); timerId=setInterval(()=>{ elapsed++; document.getElementById('clock').textContent=fmtTime(elapsed); },1000); }
+function startTimer(from){ elapsed=from||0; clearInterval(timerId); document.getElementById('clock').textContent=fmtTime(elapsed); timerId=setInterval(()=>{ if(paused)return; elapsed++; qTimes[idx]=(qTimes[idx]||0)+1; document.getElementById('clock').textContent=fmtTime(elapsed); document.getElementById('qtime').textContent=fmtTime(qTimes[idx]); },1000); }
+function togglePause(){
+  if(submitted) return;
+  paused=!paused;
+  document.getElementById('pauseOv').classList.toggle('open',paused);
+  document.getElementById('pauseBtn').textContent=paused?'Resume':'Pause';
+}
 
 function render(){
   const q=questions[idx], correctIdx=LETTERS.indexOf(q.correct);
+  const revealed=submitted||(instantMode&&answers[idx]!==null);
   document.getElementById('qnum').textContent=idx+1;
   document.getElementById('footNum').textContent=idx+1;
+  document.getElementById('qtime').textContent=fmtTime(qTimes[idx]||0);
+  document.getElementById('pauseBtn').classList.toggle('hidden',submitted);
   document.getElementById('stimulus').innerHTML=(q.stimulus&&q.stimulus.trim())?q.stimulus:'<span class="no-stim">(No passage — the question is self-contained.)</span>';
   document.getElementById('stem').innerHTML=q.stem;
   document.getElementById('markBtn').classList.toggle('on',marked[idx]);
 
   const ul=document.getElementById('options'); ul.innerHTML='';
   q.options.forEach((opt,i)=>{
-    const row=document.createElement('li'); row.className='opt-row'+((crossMode||submitted)?'':' hide-x');
+    const row=document.createElement('li'); row.className='opt-row'+((crossMode&&!revealed)?'':' hide-x');
     const li=document.createElement('div'); li.className='opt';
-    if(submitted){ if(i===correctIdx)li.classList.add('correct'); else if(answers[idx]===i)li.classList.add('wrong'); }
+    if(revealed){ if(i===correctIdx)li.classList.add('correct'); else if(answers[idx]===i)li.classList.add('wrong'); }
     else if(answers[idx]===i) li.classList.add('selected');
     if(struck[idx].has(i)) li.classList.add('struck');
     li.innerHTML=`<span class="circle">${LETTERS[i]}</span><span class="content">${opt.content}</span>`;
     const x=document.createElement('div');
     const isStruck=struck[idx].has(i);
     x.className='xout'+(isStruck?' is-undo':''); x.innerHTML=isStruck?'Undo':`<span class="xc">${LETTERS[i]}</span>`;
-    if(!submitted){
+    if(!revealed){
       li.addEventListener('click',()=>{ if(struck[idx].has(i))return; answers[idx]=i; render(); buildNav(); });
       x.addEventListener('click',(e)=>{ e.stopPropagation(); if(struck[idx].has(i)){struck[idx].delete(i);} else {struck[idx].add(i); if(answers[idx]===i)answers[idx]=null;} render(); buildNav(); });
     }
@@ -494,10 +616,10 @@ function render(){
   });
 
   const area=document.getElementById('resultArea');
-  area.innerHTML = submitted ? `<div class="rationale" style="margin-top:22px;padding:18px 20px;border-left:4px solid var(--blue);background:#f4f6fe;font-size:14px;line-height:1.6;border-radius:0 6px 6px 0"><h4 style="margin:0 0 8px">Correct answer: ${q.correct}</h4>${q.rationale||'(No explanation provided.)'}</div>` : '';
+  const timeLine=(submitted&&qTimes[idx])?`<div style="margin-top:10px;font-size:13px;color:#666">⏱ Time spent on this question: ${fmtTime(qTimes[idx])}</div>`:'';
+  area.innerHTML = revealed ? `<div class="rationale" style="margin-top:22px;padding:18px 20px;border-left:4px solid var(--blue);background:#f4f6fe;font-size:14px;line-height:1.6;border-radius:0 6px 6px 0"><h4 style="margin:0 0 8px">Correct answer: ${q.correct}</h4>${q.rationale||'(No explanation provided.)'}${timeLine}</div>` : '';
 
   const back=document.getElementById('backBtn'); back.classList.toggle('hidden',idx===0);
-  const nb=document.getElementById('nextBtn'); nb.textContent=(!submitted&&idx===questions.length-1)?'Next':'Next';
 }
 
 const PIN_SVG='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#111" stroke-width="2"><path d="M12 21s-6.2-5.4-6.2-10.2a6.2 6.2 0 1 1 12.4 0C18.2 15.6 12 21 12 21z"/><circle cx="12" cy="10.6" r="2.1"/></svg>';
@@ -509,7 +631,7 @@ function buildNav(){
     : `<span>${PIN_SVG} Current QID #${qidOf(questions[idx])}</span><span><span class="sw-dash"></span> Unanswered</span><span>${BM_SVG} For Review</span>`;
   document.getElementById('npFoot').classList.toggle('hidden',submitted);
   const grid=document.getElementById('navGrid'); grid.innerHTML='';
-  questions.forEach((q,i)=>{ const c=document.createElement('div'); c.className='cell'; if(submitted){ if(answers[i]===LETTERS.indexOf(q.correct))c.classList.add('correct'); else c.classList.add('wrong'); } else if(answers[i]!==null)c.classList.add('answered'); c.innerHTML=(i+1)+(marked[i]?`<span class="flag">${BM_SVG}</span>`:'')+(i===idx?`<span class="pin">${PIN_SVG}</span>`:''); c.addEventListener('click',()=>{ idx=i; closeNav(); render(); buildNav(); }); grid.appendChild(c); });
+  questions.forEach((q,i)=>{ const c=document.createElement('div'); c.className='cell'; if(submitted||(instantMode&&answers[i]!==null)){ if(answers[i]===LETTERS.indexOf(q.correct))c.classList.add('correct'); else c.classList.add('wrong'); } else if(answers[i]!==null)c.classList.add('answered'); c.innerHTML=(i+1)+(marked[i]?`<span class="flag">${BM_SVG}</span>`:'')+(i===idx?`<span class="pin">${PIN_SVG}</span>`:''); c.addEventListener('click',()=>{ idx=i; closeNav(); render(); buildNav(); }); grid.appendChild(c); });
 }
 
 function next(){ if(!submitted&&idx===questions.length-1){ confirmSubmit(); return; } if(idx<questions.length-1){ idx++; render(); buildNav(); } }
@@ -520,7 +642,7 @@ function submit(){
   submitted=true; clearInterval(timerId);
   let correct=0; questions.forEach((q,i)=>{ if(answers[i]===LETTERS.indexOf(q.correct))correct++; });
   if(!sessionId) sessionId='s'+Date.now()+'_'+loadSessions().length;
-  const sess={id:sessionId,date:new Date().toISOString(),difficulties:sessionDiffs,questions,answers,marked,elapsed,score:correct,total:questions.length};
+  const sess={id:sessionId,date:new Date().toISOString(),difficulties:sessionDiffs,questions,answers,marked,qTimes,instant:instantMode,elapsed,score:correct,total:questions.length};
   upsertSession(sess); syncNow();
   document.getElementById('finalScore').textContent=`${correct} / ${questions.length}`;
   document.getElementById('finalText').textContent=`${Math.round(correct/questions.length*100)}% correct`;
@@ -532,11 +654,11 @@ function exitSave(){
   if(!confirm('Exit the test? Your progress will be saved — resume it anytime from Your Practice History.')) return;
   clearInterval(timerId);
   if(!sessionId) sessionId='s'+Date.now()+'_'+loadSessions().length;
-  upsertSession({id:sessionId,date:new Date().toISOString(),difficulties:sessionDiffs,questions,answers,marked,struck:struck.map(s=>[...s]),idx,elapsed,inProgress:true,score:0,total:questions.length});
+  upsertSession({id:sessionId,date:new Date().toISOString(),difficulties:sessionDiffs,questions,answers,marked,struck:struck.map(s=>[...s]),qTimes,instant:instantMode,idx,elapsed,inProgress:true,score:0,total:questions.length});
   syncNow();
   goHome();
 }
-function goHome(){ clearInterval(timerId); document.getElementById('overlay').classList.remove('open'); closeNav(); showView('home'); renderStats(); renderHistory(); updateAvailability(); }
+function goHome(){ clearInterval(timerId); paused=false; document.getElementById('pauseOv').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); closeNav(); showView('home'); renderStats(); renderHistory(); renderVocab(); renderKeyBtn(); updateAvailability(); }
 function openNav(){ document.getElementById('navPop').classList.add('open'); document.getElementById('backdrop').classList.add('open'); buildNav(); }
 function closeNav(){ document.getElementById('navPop').classList.remove('open'); document.getElementById('backdrop').classList.remove('open'); }
 
@@ -564,7 +686,16 @@ document.getElementById('hideTimer').addEventListener('click',(e)=>{ const c=doc
 document.getElementById('reviewBtn').addEventListener('click',()=>{ document.getElementById('overlay').classList.remove('open'); idx=0; render(); buildNav(); });
 document.getElementById('homeFromResult').addEventListener('click',goHome);
 document.getElementById('moreBtn').addEventListener('click',exitSave);
-document.addEventListener('keydown',(e)=>{ if(document.getElementById('test').classList.contains('hidden'))return; if(document.getElementById('overlay').classList.contains('open'))return; if(e.key==='ArrowRight')next(); if(e.key==='ArrowLeft')back(); });
+document.getElementById('pauseBtn').addEventListener('click',togglePause);
+document.getElementById('resumeBtn').addEventListener('click',togglePause);
+document.getElementById('keyBtn').addEventListener('click',changeKey);
+document.addEventListener('keydown',(e)=>{
+  if(document.getElementById('test').classList.contains('hidden'))return;
+  if(document.getElementById('overlay').classList.contains('open'))return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='x'){ const sel=String(window.getSelection()||'').trim(); if(sel){ e.preventDefault(); addWord(sel); } return; }
+  if(paused)return;
+  if(e.key==='ArrowRight')next(); if(e.key==='ArrowLeft')back();
+});
 
 /* ---------- demo mode for layout preview (no network) ---------- */
 const DEMO_QS=[{externalid:'demo',domain:'Craft and Structure',skill:'Words in Context',difficulty:'E',
